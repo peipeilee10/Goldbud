@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>水豚吉祥物 v1</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px 16px 48px;
+    background: #F3E3D6;
+    color: #5a4330;
+    font: 14px/1.5 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 32px 0 12px; }
+  p { margin: 0; opacity: .75; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+    max-width: 900px;
+  }
+  figure { margin: 0; background: #FBF4EC; border-radius: 20px; padding: 12px; text-align: center; }
+  figure img { width: 100%; max-width: 180px; }
+  figcaption b { display: block; }
+  .small { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+  .small div { display: flex; align-items: center; gap: 8px; background: #FBF4EC; border-radius: 14px; padding: 6px 12px 6px 6px; }
+  .small img { width: 52px; height: 52px; }
+  .ref img { width: 180px; border-radius: 16px; }
+</style>
+</head>
+<body>
+  <h1>水豚吉祥物 v1</h1>
+  <p>四種狀態，對應規格 7.2。由 build.py 產生。</p>
+
+  <h2>四種狀態</h2>
+  <div class="grid">
+    <figure><img src="capybara-sleep.svg" alt=""><figcaption><b>① 尚未填收入</b>閉眼睡覺</figcaption></figure>
+    <figure><img src="capybara-calm.svg" alt=""><figcaption><b>② 已分配 &lt; 100%</b>平靜坐著</figcaption></figure>
+    <figure><img src="capybara-done.svg" alt=""><figcaption><b>③ 已分配 = 100%</b>頂柚子泡溫泉</figcaption></figure>
+    <figure><img src="capybara-sweat.svg" alt=""><figcaption><b>④ 已分配 &gt; 100%</b>冒一滴汗</figcaption></figure>
+  </div>
+
+  <h2>實際尺寸（摘要列 52px）</h2>
+  <div class="small">
+    <div><img src="capybara-sleep.svg" alt="">先填入收入吧</div>
+    <div><img src="capybara-calm.svg" alt="">還有 NT$ 7,000 可以分配</div>
+    <div><img src="capybara-done.svg" alt="">分配完成！</div>
+    <div><img src="capybara-sweat.svg" alt="">超出 8%（NT$ 4,000）</div>
+  </div>
+
+  <h2>參考圖</h2>
+  <div class="ref"><img src="../references/capybara-style.webp" alt="參考圖"></div>
+</body>
+</html>

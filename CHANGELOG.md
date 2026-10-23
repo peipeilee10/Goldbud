@@ -9,6 +9,12 @@
 
 ### 新增
 - 手機版 wireframe v1（`wireframes/v1.html`）：主畫面、摘要列四種狀態、方案選單、emoji 選擇器。
+- 水豚吉祥物 v1：四種狀態的 SVG（`design/mascot/`），以及預覽頁 `design/mascot/preview.html`。
+
+## [spec-v1.1] — 2026-10-23
+
+### 變更
+- 7.2 吉祥物：補上畫風描述、參考圖和素材位置（D-011）。
 
 ## [spec-v1.0] — 2026-10-23
 
