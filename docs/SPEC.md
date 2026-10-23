@@ -1,9 +1,9 @@
-# 財務分配 Web App — 規格書
+# 小金芽（Goldbud）— 規格書
 
 | 項目 | 內容 |
 |---|---|
-| 規格版本 | **v1.4** |
-| 狀態 | 已實作於 App v1.1.0 |
+| 規格版本 | **v1.5** |
+| 狀態 | 已實作於 App v1.2.0 |
 | 最後更新 | 2026-10-23 |
 | 相關文件 | [決策紀錄](DECISIONS.md)、[變更紀錄](../CHANGELOG.md) |
 
@@ -215,7 +215,7 @@ type Expense = {
 - 支援「加入主畫面」（iPhone Safari）和「加到主畫面／安裝應用程式」（Android Chrome）。
 - 從主畫面打開時全螢幕顯示，沒有瀏覽器網址列（`display: standalone`）。
 - 桌面圖示：奶油色底，加上頭頂柚子的水豚（`design/icons/`），由 `design/mascot/build.py` 和 `design/icons/render.sh` 產生。
-- App 名稱：財務分配。
+- App 名稱：**小金芽**（英文 Goldbud）。
 - 第一次打開後，App 的檔案會存在手機上，**沒有網路也能打開**（`sw.js`）。
 - 發布新版後，下次打開 App 時會在背景下載新版，再下一次打開就是新版。
 

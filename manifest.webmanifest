@@ -1,6 +1,6 @@
 {
-  "name": "財務分配",
-  "short_name": "財務分配",
+  "name": "小金芽",
+  "short_name": "小金芽",
   "description": "用 % 或金額分配每個月的收入",
   "lang": "zh-Hant",
   "start_url": "./",

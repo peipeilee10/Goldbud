@@ -1,6 +1,8 @@
 // 資料建立、讀寫與版本轉換。資料結構見 docs/SPEC.md 10.1。
 
-export const STORAGE_KEY = "budget-capybara";
+export const STORAGE_KEY = "goldbud";
+// App 改名前用過的 key：新 key 沒有資料時，從這裡搬過來
+const LEGACY_KEYS = ["budget-capybara"];
 export const SCHEMA_VERSION = 1;
 
 export function uid() {
@@ -100,6 +102,7 @@ export function load(storage) {
   let raw = null;
   try {
     raw = storage?.getItem(STORAGE_KEY) ?? null;
+    for (const key of LEGACY_KEYS) raw ??= storage?.getItem(key) ?? null;
   } catch {
     return defaultData();
   }

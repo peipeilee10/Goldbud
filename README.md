@@ -1,15 +1,16 @@
-# 財務分配 Web App
+# 小金芽（Goldbud）
 
-手機上就能用的財務分配工具：填入收入，再用 % 或金額分配到各個支出項目。吉祥物是一隻水豚。
+手機上就能用的財務分配工具，App 名稱是「小金芽」：填入收入，再用 % 或金額分配到各個支出項目。吉祥物是一隻水豚。
 
 ## 目前進度
 
-- [x] 規格書 v1.4
+- [x] 規格書 v1.5
 - [x] Wireframe v1
 - [x] 水豚吉祥物 v1
 - [x] 視覺設計 v1
 - [x] App v1.0.0
 - [x] App v1.1.0：可加到主畫面、離線使用
+- [x] App v1.2.0：改名為小金芽
 - [ ] 放上網路，用手機開啟
 
 ## 在電腦上執行
@@ -51,7 +52,7 @@ docs/
 design/
   tokens.css       顏色、字型、圓角等設計 tokens（App 共用）
   visual/          各版本視覺稿
-  references/      風格參考圖
+  references/      風格參考圖（不放進 git，只存在本機）
   mascot/          水豚 SVG、產生程式 build.py、預覽頁 preview.html
   icons/           桌面圖示；改了水豚後執行 sh design/icons/render.sh 重新產生 PNG
 wireframes/        各版本 wireframe（用瀏覽器打開 .html）

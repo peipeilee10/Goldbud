@@ -2,8 +2,10 @@
 // 每次發布新版都要更新 VERSION（tests/version.test.js 會檢查和 src/version.js 一致），
 // 手機才會下載新檔案。
 
-const VERSION = "1.1.0";
-const CACHE = `budget-capybara-${VERSION}`;
+const VERSION = "1.2.0";
+const CACHE = `goldbud-${VERSION}`;
+// 舊名稱時期的快取也一起清掉
+const OLD_PREFIXES = ["goldbud-", "budget-capybara-"];
 
 const FILES = [
   "./",
@@ -37,7 +39,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("budget-capybara-") && k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && OLD_PREFIXES.some((p) => k.startsWith(p))).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });

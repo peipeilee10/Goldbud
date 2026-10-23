@@ -46,6 +46,13 @@ test("存檔後讀回相同資料", () => {
   assert.deepEqual(load(s), d);
 });
 
+test("改名前的資料（舊 key）會被讀進來", () => {
+  const d = defaultData();
+  d.plans[0].name = "舊方案";
+  const s = memoryStorage({ "budget-capybara": JSON.stringify(d) });
+  assert.equal(load(s).plans[0].name, "舊方案");
+});
+
 test("沒有資料時回傳預設範例", () => {
   assert.equal(load(memoryStorage()).plans[0].name, "我的方案");
 });
