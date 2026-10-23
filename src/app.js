@@ -540,3 +540,8 @@ $("app-menu").addEventListener("click", openAppMenu);
 Object.values(MASCOT).forEach((src) => (new Image().src = src));
 
 renderAll();
+
+// 離線也能開啟（sw.js）
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}

@@ -4,11 +4,12 @@
 
 ## 目前進度
 
-- [x] 規格書 v1.3
+- [x] 規格書 v1.4
 - [x] Wireframe v1
 - [x] 水豚吉祥物 v1
 - [x] 視覺設計 v1
 - [x] App v1.0.0
+- [x] App v1.1.0：可加到主畫面、離線使用
 - [ ] 放上網路，用手機開啟
 
 ## 在電腦上執行
@@ -33,6 +34,8 @@ npm test
 
 ```
 index.html         App 頁面
+manifest.webmanifest  加到主畫面用的 App 設定
+sw.js              離線快取（service worker）
 src/
   app.js           畫面與互動
   app.css          App 樣式
@@ -50,6 +53,7 @@ design/
   visual/          各版本視覺稿
   references/      風格參考圖
   mascot/          水豚 SVG、產生程式 build.py、預覽頁 preview.html
+  icons/           桌面圖示；改了水豚後執行 sh design/icons/render.sh 重新產生 PNG
 wireframes/        各版本 wireframe（用瀏覽器打開 .html）
 .claude/launch.json 本機預覽伺服器設定
 ```
@@ -62,7 +66,8 @@ wireframes/        各版本 wireframe（用瀏覽器打開 .html）
 2. **記決策**：在 `docs/DECISIONS.md` 新增一筆，寫下原因。
 3. **寫程式＋測試**：修改 `src/`，在 `tests/` 補上測試，跑 `npm test`。
 4. **記變更**：在 `CHANGELOG.md` 的「未發布」區塊寫下改了什麼。
-5. **發布**：更新版本號（`package.json`、`src/version.js`、CHANGELOG），git commit 後打 tag（例如 `v1.1.0`）。
+5. **發布**：更新版本號（`package.json`、`src/version.js`、`sw.js` 的 `VERSION`、CHANGELOG），跑 `npm test` 確認一致，git commit 後打 tag（例如 `v1.2.0`）。
+   - 有新增檔案的話，也要加進 `sw.js` 的 `FILES` 清單，離線時才打得開。
 
 ### 改資料結構時
 

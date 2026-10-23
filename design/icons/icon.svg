@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+  <filter id="crayon" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" result="wobble"/>
+    <feDisplacementMap in="SourceGraphic" in2="wobble" scale="2.5" xChannelSelector="R" yChannelSelector="G" result="drawn"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="8" result="grain"/>
+    <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.6 0 0 0 1.3" result="grainAlpha"/>
+    <feComposite in="drawn" in2="grainAlpha" operator="in"/>
+  </filter>
+  </defs>
+  <rect width="200" height="200" fill="#F6EBDD"/>
+  <g transform="translate(100 100) scale(0.82) translate(-100 -104)">
+    <g filter="url(#crayon)">
+    <circle cx="64" cy="76" r="13" fill="#D9A86F" stroke="#6B4A2F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="136" cy="76" r="13" fill="#D9A86F" stroke="#6B4A2F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M40 168 C30 126 38 74 100 66 C162 74 170 126 160 168 C140 175 60 175 40 168 Z" fill="#D9A86F" stroke="#6B4A2F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M60 74 L64 78 M140 74 L136 78" stroke="#C08A55" stroke-width="4" stroke-linecap="round"/>
+    <path d="M146 112 l1 6 M149 126 l1 6 M151 140 l1 6 M144 132 l1 5" stroke="#C08A55" stroke-width="3" stroke-linecap="round"/>
+    <rect x="82" y="96" width="36" height="36" rx="15" fill="#A87A50"/>
+    <path d="M93 106 L100 113 L107 106 M100 113 L100 122" fill="none" stroke="#6B4A2F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="68" cy="116" rx="9" ry="6" fill="#F2A7A3"/>
+    <ellipse cx="132" cy="116" rx="9" ry="6" fill="#F2A7A3"/>
+    <path d="M65 116 l2 -2 M70 116 l2 -2 M129 116 l2 -2 M134 116 l2 -2" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+    <circle cx="78" cy="101" r="4.2" fill="#6B4A2F"/>
+    <circle cx="122" cy="101" r="4.2" fill="#6B4A2F"/>
+    <ellipse cx="72" cy="168" rx="13" ry="10" fill="#D9A86F" stroke="#6B4A2F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="128" cy="168" rx="13" ry="10" fill="#D9A86F" stroke="#6B4A2F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="100" cy="56" r="15" fill="#F5A040" stroke="#6B4A2F" stroke-width="4"/>
+    <ellipse cx="95" cy="51" rx="4" ry="2.5" fill="#FBC77E" transform="rotate(-30 95 51)"/>
+    <path d="M100 41 l0 -4" stroke="#6B4A2F" stroke-width="3" stroke-linecap="round"/>
+    <path d="M102 38 C106 28 118 29 120 34 C114 41 106 41 102 38 Z" fill="#5A9A5E"/>
+    </g>
+  </g>
+</svg>

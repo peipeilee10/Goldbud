@@ -123,7 +123,34 @@ STATES = {
     "sweat": svg("水豚冒汗", ears(), body(), face(EYES_OPEN), feet(), sweat()),
 }
 
+
+def icon(scale):
+    """App 圖示：奶油色滿版背景＋頂柚子的水豚。手機系統會自己裁成圓角。"""
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>{FILTER}
+  </defs>
+  <rect width="200" height="200" fill="#F6EBDD"/>
+  <g transform="translate(100 100) scale({scale}) translate(-100 -104)">
+    <g filter="url(#crayon)">{ears()}{body()}{face(EYES_OPEN)}{feet()}{yuzu()}
+    </g>
+  </g>
+</svg>
+"""
+
+
+ICONS = {
+    "icon": icon(0.82),
+    # Android 會把圖示裁成各種形狀，主體要縮在中間 80% 的安全範圍內
+    "icon-maskable": icon(0.62),
+}
+
 if __name__ == "__main__":
     for name, content in STATES.items():
         (OUT / f"capybara-{name}.svg").write_text(content, encoding="utf-8")
         print(f"wrote capybara-{name}.svg")
+
+    icons = OUT.parent / "icons"
+    icons.mkdir(exist_ok=True)
+    for name, content in ICONS.items():
+        (icons / f"{name}.svg").write_text(content, encoding="utf-8")
+        print(f"wrote icons/{name}.svg")

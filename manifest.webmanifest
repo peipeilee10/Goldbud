@@ -1,0 +1,17 @@
+{
+  "name": "財務分配",
+  "short_name": "財務分配",
+  "description": "用 % 或金額分配每個月的收入",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6EBDD",
+  "theme_color": "#F6EBDD",
+  "icons": [
+    { "src": "design/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "design/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "design/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
