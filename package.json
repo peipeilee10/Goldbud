@@ -1,0 +1,11 @@
+{
+  "name": "budget-capybara",
+  "version": "1.0.0",
+  "private": true,
+  "description": "手機上用的財務分配工具",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/",
+    "start": "python3 -m http.server 8765 --bind 127.0.0.1"
+  }
+}

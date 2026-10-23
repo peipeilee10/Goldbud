@@ -4,26 +4,53 @@
 
 ## 目前進度
 
-- [x] 規格書 v1.2
+- [x] 規格書 v1.3
 - [x] Wireframe v1
 - [x] 水豚吉祥物 v1
-- [x] 視覺設計 v1（待確認）
-- [ ] 開發 v1.0.0
+- [x] 視覺設計 v1
+- [x] App v1.0.0
+- [ ] 放上網路，用手機開啟
+
+## 在電腦上執行
+
+需要 Python 3（macOS 內建）。在專案資料夾執行：
+
+```
+npm start
+```
+
+然後用瀏覽器打開 <http://localhost:8765>。
+
+## 測試
+
+需要 Node.js 18 以上：
+
+```
+npm test
+```
 
 ## 資料夾結構
 
 ```
+index.html         App 頁面
+src/
+  app.js           畫面與互動
+  app.css          App 樣式
+  calc.js          計算（% ⇄ 金額、加總、格式）
+  store.js         資料建立、讀寫、版本轉換
+  version.js       App 版本號
+tests/             單元測試
 README.md          專案說明（本檔）
 CHANGELOG.md       每個版本改了什麼
 docs/
   SPEC.md          規格書（目前版本）
   DECISIONS.md     決策紀錄：選了什麼、為什麼
-wireframes/        各版本 wireframe（用瀏覽器打開 .html）
 design/
   tokens.css       顏色、字型、圓角等設計 tokens（App 共用）
   visual/          各版本視覺稿
   references/      風格參考圖
   mascot/          水豚 SVG、產生程式 build.py、預覽頁 preview.html
+wireframes/        各版本 wireframe（用瀏覽器打開 .html）
 .claude/launch.json 本機預覽伺服器設定
 ```
 
@@ -33,7 +60,16 @@ design/
 
 1. **改規格**：更新 `docs/SPEC.md`，並把規格版本號往上加。
 2. **記決策**：在 `docs/DECISIONS.md` 新增一筆，寫下原因。
-3. **記變更**：在 `CHANGELOG.md` 的「未發布」區塊寫下改了什麼。
-4. **提交**：用 git commit 存成一個版本；發布時打 tag（例如 `spec-v1.1`、`v1.1.0`）。
+3. **寫程式＋測試**：修改 `src/`，在 `tests/` 補上測試，跑 `npm test`。
+4. **記變更**：在 `CHANGELOG.md` 的「未發布」區塊寫下改了什麼。
+5. **發布**：更新版本號（`package.json`、`src/version.js`、CHANGELOG），git commit 後打 tag（例如 `v1.1.0`）。
+
+### 改資料結構時
+
+使用者的資料存在他們的瀏覽器裡，改格式時要讓舊資料能自動轉換：
+
+1. `src/store.js` 的 `SCHEMA_VERSION` 加 1。
+2. 在 `MIGRATIONS` 加上舊版 → 新版的轉換函式。
+3. 在 `tests/store.test.js` 加上轉換測試。
 
 所有歷史都在 git 裡，可以用 `git log` 查看，或回到任何一個舊版本。
