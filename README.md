@@ -4,10 +4,10 @@
 
 ## 目前進度
 
-- [x] 規格書 v1.1
-- [x] Wireframe v1（待確認）
-- [x] 水豚吉祥物 v1（待確認）
-- [ ] 視覺設計（配色、整體畫面）
+- [x] 規格書 v1.2
+- [x] Wireframe v1
+- [x] 水豚吉祥物 v1
+- [x] 視覺設計 v1（待確認）
 - [ ] 開發 v1.0.0
 
 ## 資料夾結構
@@ -20,6 +20,8 @@ docs/
   DECISIONS.md     決策紀錄：選了什麼、為什麼
 wireframes/        各版本 wireframe（用瀏覽器打開 .html）
 design/
+  tokens.css       顏色、字型、圓角等設計 tokens（App 共用）
+  visual/          各版本視覺稿
   references/      風格參考圖
   mascot/          水豚 SVG、產生程式 build.py、預覽頁 preview.html
 .claude/launch.json 本機預覽伺服器設定

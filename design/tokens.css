@@ -1,0 +1,49 @@
+/*
+ * 設計 tokens：顏色、字型、圓角、陰影。
+ * 視覺稿和正式 App 都引用這個檔，改這裡就會全部一起變。
+ */
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap");
+
+:root {
+  /* 基底：奶油色＋水豚咖啡 */
+  --bg: #F6EBDD;
+  --surface: #FFF9F1;
+  --field: #FFFFFF;
+  --ink: #5A4330;          /* 主要文字 */
+  --ink-soft: #9C8571;     /* 次要文字 */
+  --outline: #6B4A2F;      /* 卡片／按鈕粗外框，與水豚外框同色 */
+  --hairline: #EAD9C5;     /* 輸入框、分隔線 */
+
+  /* 收入：薄荷綠 */
+  --income: #7CCBA8;
+  --income-soft: #E2F4EA;
+  --income-ink: #2F7A5A;
+
+  /* 支出：蜜桃橘 */
+  --expense: #F4AA80;
+  --expense-soft: #FDE8DA;
+  --expense-ink: #B85F31;
+
+  /* 進度／完成：柚子橘 */
+  --yuzu: #F5A040;
+  --yuzu-soft: #FCD9A8;
+
+  /* 超支：柔和紅 */
+  --over: #E57F78;
+  --over-soft: #FBE0DD;
+  --over-ink: #A9443E;
+
+  /* 字型：數字用 Nunito（圓潤），中文用系統字 */
+  --font-text: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  --font-num: "Nunito", var(--font-text);
+
+  /* 形狀 */
+  --r-card: 22px;
+  --r-field: 14px;
+  --r-pill: 999px;
+  --border: 2.5px solid var(--outline);
+  --lift: 0 4px 0 var(--outline);        /* 遊戲按鈕的「厚底」 */
+  --lift-pressed: 0 1px 0 var(--outline);
+
+  --tap: 44px;                            /* 最小點擊範圍 */
+}
