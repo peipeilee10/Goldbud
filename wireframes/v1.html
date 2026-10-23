@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe v1 — 財務分配</title>
+<style>
+  :root {
+    --ink: #333;
+    --muted: #888;
+    --line: #bbb;
+    --fill: #eee;
+    --fill-2: #ddd;
+    --note: #2f6fdb;
+    --bg: #f7f7f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 64px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+  }
+  header.doc { max-width: 1200px; margin: 0 auto 24px; }
+  header.doc h1 { margin: 0 0 4px; font-size: 22px; }
+  header.doc p { margin: 0; color: var(--muted); }
+
+  .board {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 40px 32px;
+  }
+  .screen h2 { font-size: 15px; margin: 0 0 10px; }
+  .screen h2 span { color: var(--muted); font-weight: normal; }
+
+  /* phone frame */
+  .phone {
+    width: 100%;
+    max-width: 360px;
+    border: 2px solid var(--ink);
+    border-radius: 28px;
+    background: #fff;
+    overflow: hidden;
+    position: relative;
+  }
+  .phone .scroll { padding: 12px 14px 14px; }
+
+  .bar { display: flex; align-items: center; justify-content: space-between; }
+  .title { font-weight: 700; font-size: 16px; }
+  .icon-btn {
+    width: 32px; height: 32px; border: 1.5px solid var(--line); border-radius: 10px;
+    display: grid; place-items: center; color: var(--muted); font-size: 14px;
+  }
+
+  .tabs { display: flex; gap: 8px; margin: 12px 0 14px; overflow: hidden; }
+  .tab {
+    padding: 6px 12px; border: 1.5px solid var(--line); border-radius: 999px;
+    white-space: nowrap; font-size: 13px; color: var(--muted);
+  }
+  .tab.on { border-color: var(--ink); color: var(--ink); font-weight: 700; background: var(--fill); }
+
+  .card {
+    border: 1.5px solid var(--line);
+    border-bottom-width: 4px;
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .card-head b { font-size: 15px; }
+  .tag { font-size: 11px; color: var(--muted); border: 1px dashed var(--line); padding: 0 6px; border-radius: 6px; }
+
+  .row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .field {
+    border: 1.5px solid var(--line); border-radius: 10px; padding: 6px 8px;
+    min-height: 34px; display: flex; align-items: center; gap: 4px; font-size: 13px;
+  }
+  .field.grow { flex: 1; }
+  .field.num { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+  .field.primary { border-color: var(--ink); border-width: 2px; }
+  .field .ph { color: var(--muted); }
+  .x { width: 28px; text-align: center; color: var(--muted); }
+  .emoji { width: 34px; height: 34px; border: 1.5px solid var(--line); border-radius: 10px; display: grid; place-items: center; }
+
+  .exp { border-top: 1px dashed var(--fill-2); padding-top: 8px; margin-top: 8px; }
+  .exp:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+  .exp .row:last-child { padding-left: 40px; }
+  .swap { color: var(--muted); font-size: 12px; }
+
+  .add {
+    border: 1.5px dashed var(--line); border-radius: 10px; text-align: center;
+    padding: 7px; color: var(--muted); margin-top: 6px; font-size: 13px;
+  }
+  .total { display: flex; justify-content: space-between; border-top: 1.5px solid var(--line); margin-top: 8px; padding-top: 8px; font-weight: 700; }
+  .sub { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; }
+
+  /* sticky summary */
+  .summary {
+    border-top: 2px solid var(--ink);
+    background: #fafafa;
+    padding: 10px 14px 14px;
+  }
+  .summary .nums { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; font-size: 11px; color: var(--muted); }
+  .summary .nums b { display: block; font-size: 14px; color: var(--ink); }
+  .meter { height: 14px; border: 1.5px solid var(--ink); border-radius: 999px; margin: 8px 0; overflow: hidden; display: flex; }
+  .meter i { display: block; background: var(--fill-2); }
+  .meter i.over { background: repeating-linear-gradient(45deg, #999 0 4px, #ccc 4px 8px); }
+  .mascot-row { display: flex; gap: 10px; align-items: center; }
+  .mascot {
+    width: 52px; height: 52px; border: 1.5px dashed var(--ink); border-radius: 50%;
+    display: grid; place-items: center; font-size: 10px; text-align: center; line-height: 1.2; flex: none;
+  }
+  .bubble { border: 1.5px solid var(--line); border-radius: 12px; padding: 6px 10px; font-size: 13px; }
+
+  /* sheets */
+  .dim { background: #0002; height: 220px; display: grid; place-items: center; color: #fff; font-size: 12px; }
+  .sheet { border-top: 2px solid var(--ink); border-radius: 20px 20px 0 0; padding: 10px 14px 16px; margin-top: -20px; background: #fff; position: relative; }
+  .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 10px; }
+  .menu-item { padding: 11px 4px; border-bottom: 1px solid var(--fill-2); }
+  .menu-item.danger { color: #b00; }
+  .menu-item.disabled { color: var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 8px; }
+  .grid div { aspect-ratio: 1; border: 1.5px solid var(--line); border-radius: 10px; display: grid; place-items: center; font-size: 18px; }
+  .grid div.on { border-color: var(--ink); border-width: 2px; }
+
+  /* annotations */
+  .n {
+    display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--note); color: #fff; font-size: 11px; font-weight: 700; flex: none;
+  }
+  .notes { margin: 12px 0 0; padding: 0; list-style: none; max-width: 360px; }
+  .notes li { display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+  .state { margin-bottom: 14px; }
+  .state .label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<header class="doc">
+  <h1>財務分配 App — Wireframe v1</h1>
+  <p>對應規格 spec-v1.0 · 低保真，只看結構與互動，配色與水豚造型在視覺設計階段處理 · 2026-10-23</p>
+</header>
+
+<div class="board">
+
+  <!-- A. 主畫面 -->
+  <section class="screen">
+    <h2>A. 主畫面 <span>· 已分配 86%</span></h2>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar">
+          <span class="title">財務分配</span>
+          <span class="icon-btn">⋯</span>
+        </div>
+
+        <div class="tabs">
+          <span class="tab on">我的方案 ▾</span>
+          <span class="tab">加薪後</span>
+          <span class="tab">＋</span>
+          <span class="n" style="margin-left:auto">1</span>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><b>收入</b><span class="tag">薄荷綠</span></div>
+          <div class="row">
+            <div class="field grow">薪水</div>
+            <div class="field num" style="width:120px">NT$ 45,000</div>
+            <span class="x">✕</span>
+          </div>
+          <div class="row">
+            <div class="field grow">兼職</div>
+            <div class="field num" style="width:120px">NT$ 5,000</div>
+            <span class="x">✕</span>
+          </div>
+          <div class="add">＋ 新增收入</div>
+          <div class="total"><span>收入總計 <span class="n">2</span></span><span>NT$ 50,000</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><b>支出分配</b><span class="tag">蜜桃橘</span></div>
+
+          <div class="exp">
+            <div class="row">
+              <span class="emoji">🍙</span>
+              <div class="field grow">吃飯</div>
+              <span class="x">✕</span>
+            </div>
+            <div class="row">
+              <div class="field num primary" style="flex:1">📌 30 %</div>
+              <span class="swap">⇄</span>
+              <div class="field num" style="flex:1.4">NT$ 15,000</div>
+            </div>
+          </div>
+
+          <div class="exp">
+            <div class="row">
+              <span class="emoji">🏠</span>
+              <div class="field grow">房租</div>
+              <span class="x">✕</span>
+            </div>
+            <div class="row">
+              <div class="field num" style="flex:1">26 %</div>
+              <span class="swap">⇄</span>
+              <div class="field num primary" style="flex:1.4">📌 NT$ 13,000</div>
+              <span class="n">3</span>
+            </div>
+          </div>
+
+          <div class="exp">
+            <div class="row">
+              <span class="emoji">🐷</span>
+              <div class="field grow">儲蓄</div>
+              <span class="x">✕</span>
+            </div>
+            <div class="row">
+              <div class="field num primary" style="flex:1">📌 20 %</div>
+              <span class="swap">⇄</span>
+              <div class="field num" style="flex:1.4">NT$ 10,000</div>
+            </div>
+          </div>
+
+          <div class="exp">
+            <div class="row">
+              <span class="emoji">🎮</span>
+              <div class="field grow">娛樂</div>
+              <span class="x">✕</span>
+            </div>
+            <div class="row">
+              <div class="field num primary" style="flex:1">📌 10 %</div>
+              <span class="swap">⇄</span>
+              <div class="field num" style="flex:1.4">NT$ 5,000</div>
+            </div>
+          </div>
+
+          <div class="add">＋ 新增支出</div>
+          <div class="total"><span>已分配 <span class="n">4</span></span><span>86% · NT$ 43,000</span></div>
+          <div class="sub"><span>未分配</span><span>14% · NT$ 7,000</span></div>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="nums">
+          <div>收入<b>50,000</b></div>
+          <div>已分配<b>43,000</b></div>
+          <div>剩餘<b>7,000</b></div>
+        </div>
+        <div class="meter"><i style="width:86%"></i></div>
+        <div class="mascot-row">
+          <div class="mascot">水豚<br>平靜坐著</div>
+          <div class="bubble">還有 NT$ 7,000 可以分配</div>
+          <span class="n">5</span>
+        </div>
+      </div>
+    </div>
+
+    <ol class="notes">
+      <li><span class="n">1</span>方案標籤列可左右滑動。點目前方案的 ▾ 開啟方案選單（見 C）。</li>
+      <li><span class="n">2</span>收入總計即時加總。金額欄跳出數字鍵盤。</li>
+      <li><span class="n">3</span>粗框＋📌 是「主值」，也就是最後編輯的欄位。房租填了金額，所以收入改變時房租金額不變、% 會重算。</li>
+      <li><span class="n">4</span>已分配與未分配小計，會跟著每一列即時更新。</li>
+      <li><span class="n">5</span>摘要列固定在畫面底部，捲動時永遠看得到。四種狀態見 B。</li>
+      <li><span class="n">·</span>每列支出分兩行：上行是圖示＋名稱，下行是 % ⇄ 金額，在手機寬度下才放得下。點 emoji 開啟選擇器（見 D）。</li>
+    </ol>
+  </section>
+
+  <!-- B. 摘要列狀態 -->
+  <section class="screen">
+    <h2>B. 摘要列的四種狀態</h2>
+
+    <div class="state">
+      <div class="label">① 尚未填收入</div>
+      <div class="phone"><div class="summary" style="border-top:0">
+        <div class="nums"><div>收入<b>0</b></div><div>已分配<b>0</b></div><div>剩餘<b>0</b></div></div>
+        <div class="meter"><i style="width:0"></i></div>
+        <div class="mascot-row"><div class="mascot">水豚<br>閉眼睡覺</div><div class="bubble">先填入收入吧</div></div>
+      </div></div>
+    </div>
+
+    <div class="state">
+      <div class="label">② 已分配 &lt; 100%</div>
+      <div class="phone"><div class="summary" style="border-top:0">
+        <div class="nums"><div>收入<b>50,000</b></div><div>已分配<b>43,000</b></div><div>剩餘<b>7,000</b></div></div>
+        <div class="meter"><i style="width:86%"></i></div>
+        <div class="mascot-row"><div class="mascot">水豚<br>平靜坐著</div><div class="bubble">還有 NT$ 7,000 可以分配</div></div>
+      </div></div>
+    </div>
+
+    <div class="state">
+      <div class="label">③ 已分配 = 100%（灑彩帶一次）</div>
+      <div class="phone"><div class="summary" style="border-top:0">
+        <div class="nums"><div>收入<b>50,000</b></div><div>已分配<b>50,000</b></div><div>剩餘<b>0</b></div></div>
+        <div class="meter"><i style="width:100%"></i></div>
+        <div class="mascot-row"><div class="mascot">水豚<br>頂柚子<br>泡溫泉</div><div class="bubble">分配完成！</div></div>
+      </div></div>
+    </div>
+
+    <div class="state">
+      <div class="label">④ 已分配 &gt; 100%（只警告，不擋輸入）</div>
+      <div class="phone"><div class="summary" style="border-top:0">
+        <div class="nums"><div>收入<b>50,000</b></div><div>已分配<b>54,000</b></div><div>剩餘<b>−4,000</b></div></div>
+        <div class="meter"><i style="width:92.6%"></i><i class="over" style="width:7.4%"></i></div>
+        <div class="mascot-row"><div class="mascot">水豚<br>冒一滴汗</div><div class="bubble">超出 8%（NT$ 4,000）</div></div>
+      </div></div>
+    </div>
+
+    <ol class="notes">
+      <li><span class="n">·</span>進度條超過 100% 時，整條代表已分配總額，紅色斜線段是超出的部分。</li>
+      <li><span class="n">·</span>彩帶只在「剛好變成 100%」的那一刻播放一次，不會一直重播。</li>
+    </ol>
+  </section>
+
+  <!-- C. 方案選單 -->
+  <section class="screen">
+    <h2>C. 方案選單 <span>· 點目前方案的 ▾</span></h2>
+    <div class="phone">
+      <div class="dim">（主畫面變暗）</div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <b>我的方案</b>
+        <div class="menu-item">✏️ 重新命名</div>
+        <div class="menu-item">📄 複製這個方案</div>
+        <div class="menu-item danger">🗑 刪除方案</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>從底部滑出的面板，單手好按。</li>
+      <li><span class="n">·</span>重新命名：在面板內變成輸入框，按「完成」儲存。</li>
+      <li><span class="n">·</span>刪除：跳出確認視窗。只剩一個方案時，「刪除」顯示為灰色不能按。</li>
+      <li><span class="n">·</span>點方案列最右邊的「＋」直接新增一個預設範例方案，並切換過去。</li>
+      <li><span class="n">·</span>右上角 ⋯ 是全域選單，目前只有「清除全部資料」（需二次確認）。</li>
+    </ol>
+  </section>
+
+  <!-- D. Emoji 選擇器 -->
+  <section class="screen">
+    <h2>D. Emoji 選擇器 <span>· 點支出列的圖示</span></h2>
+    <div class="phone">
+      <div class="dim">（主畫面變暗）</div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <b>選一個圖示</b>
+        <div class="grid">
+          <div class="on">🍙</div><div>🏠</div><div>🐷</div><div>🎮</div><div>🚌</div><div>💊</div>
+          <div>📚</div><div>🎁</div><div>👕</div><div>📱</div><div>✈️</div><div>🐱</div>
+          <div>☕</div><div>💡</div><div>🛡️</div><div>📈</div><div>❤️</div><div>💸</div>
+        </div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>點一下就套用並關閉面板。目前選中的會加粗框。</li>
+      <li><span class="n">·</span>新增支出時預設 💸。</li>
+    </ol>
+  </section>
+
+</div>
+</body>
+</html>

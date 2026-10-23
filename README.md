@@ -5,7 +5,7 @@
 ## 目前進度
 
 - [x] 規格書 v1.0
-- [ ] Wireframe（進行中）
+- [x] Wireframe v1（待確認）
 - [ ] 視覺設計
 - [ ] 開發 v1.0.0
 
@@ -17,7 +17,8 @@ CHANGELOG.md       每個版本改了什麼
 docs/
   SPEC.md          規格書（目前版本）
   DECISIONS.md     決策紀錄：選了什麼、為什麼
-wireframes/        各版本 wireframe
+wireframes/        各版本 wireframe（用瀏覽器打開 .html）
+.claude/launch.json 本機預覽伺服器設定
 ```
 
 ## 迭代流程
