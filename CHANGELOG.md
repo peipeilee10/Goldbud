@@ -7,6 +7,10 @@
 
 ## [未發布]
 
+### 新增
+- 上線：<https://peipeilee10.github.io/Goldbud/>（GitHub Pages，D-022）。
+- README：網址、加到主畫面的方法、上線流程。
+
 ## [v1.2.0] — 2026-10-23
 
 ### 變更

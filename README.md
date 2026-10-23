@@ -2,6 +2,12 @@
 
 手機上就能用的財務分配工具，App 名稱是「小金芽」：填入收入，再用 % 或金額分配到各個支出項目。吉祥物是一隻水豚。
 
+**網址：<https://peipeilee10.github.io/Goldbud/>**
+
+加到手機主畫面：
+- iPhone：用 Safari 打開網址 → 分享 → 加入主畫面
+- Android：用 Chrome 打開網址 → ⋮ → 加到主畫面／安裝應用程式
+
 ## 目前進度
 
 - [x] 規格書 v1.5
@@ -11,7 +17,7 @@
 - [x] App v1.0.0
 - [x] App v1.1.0：可加到主畫面、離線使用
 - [x] App v1.2.0：改名為小金芽
-- [ ] 放上網路，用手機開啟
+- [x] 放上網路（GitHub Pages）
 
 ## 在電腦上執行
 
@@ -69,6 +75,7 @@ wireframes/        各版本 wireframe（用瀏覽器打開 .html）
 4. **記變更**：在 `CHANGELOG.md` 的「未發布」區塊寫下改了什麼。
 5. **發布**：更新版本號（`package.json`、`src/version.js`、`sw.js` 的 `VERSION`、CHANGELOG），跑 `npm test` 確認一致，git commit 後打 tag（例如 `v1.2.0`）。
    - 有新增檔案的話，也要加進 `sw.js` 的 `FILES` 清單，離線時才打得開。
+6. **上線**：`git push && git push --tags`。GitHub Pages 會自動用 `main` 分支更新網站，約 1 分鐘後生效；手機上的 App 會在下次打開時於背景下載新版，再下一次打開就是新版。
 
 ### 改資料結構時
 
