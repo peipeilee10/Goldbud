@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe v2 — 小金芽記帳</title>
+<style>
+  :root {
+    --ink: #333;
+    --muted: #888;
+    --line: #bbb;
+    --fill: #eee;
+    --fill-2: #ddd;
+    --dark: #999;
+    --note: #2f6fdb;
+    --bg: #f7f7f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 64px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+  }
+  header.doc, nav.toc, .board, h2.group { max-width: 1240px; margin-left: auto; margin-right: auto; }
+  header.doc { margin-bottom: 16px; }
+  header.doc h1 { margin: 0 0 4px; font-size: 22px; }
+  header.doc p { margin: 0; color: var(--muted); }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+  nav.toc a { font-size: 12px; color: var(--note); text-decoration: none; border: 1px solid #cddcf7; border-radius: 999px; padding: 2px 10px; background: #fff; }
+  h2.group { font-size: 17px; margin-top: 40px; margin-bottom: 16px; padding-bottom: 6px; border-bottom: 2px solid var(--fill-2); }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 40px 32px;
+    align-items: start;
+  }
+  .screen h3 { font-size: 15px; margin: 0 0 10px; }
+  .screen h3 span { color: var(--muted); font-weight: normal; }
+
+  /* phone */
+  .phone {
+    width: 100%; max-width: 360px;
+    border: 2px solid var(--ink); border-radius: 28px;
+    background: #fff; overflow: hidden; position: relative;
+    display: flex; flex-direction: column;
+  }
+  .scroll { padding: 12px 14px 14px; flex: 1; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .title { font-weight: 700; font-size: 16px; }
+  .icon-btn { width: 32px; height: 32px; border: 1.5px solid var(--line); border-radius: 10px; display: grid; place-items: center; color: var(--muted); font-size: 14px; flex: none; }
+  .back { color: var(--note); font-weight: 700; }
+
+  .month { display: flex; align-items: center; justify-content: center; gap: 14px; font-weight: 700; margin: 4px 0 10px; }
+  .month span { color: var(--muted); font-weight: 400; font-size: 18px; }
+
+  .card { border: 1.5px solid var(--line); border-bottom-width: 4px; border-radius: 16px; padding: 12px; margin-bottom: 12px; }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .card-head b { font-size: 15px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+
+  .overview { display: flex; gap: 10px; align-items: center; }
+  .mascot { width: 48px; height: 48px; border: 1.5px dashed var(--ink); border-radius: 50%; display: grid; place-items: center; font-size: 9px; text-align: center; line-height: 1.15; flex: none; }
+  .stats3 { display: grid; grid-template-columns: repeat(3, 1fr); flex: 1; text-align: center; font-size: 11px; color: var(--muted); }
+  .stats3 b { display: block; font-size: 15px; color: var(--ink); }
+  .meter { position: relative; height: 14px; border: 1.5px solid var(--ink); border-radius: 999px; margin: 10px 0 4px; overflow: visible; display: flex; }
+  .meter i { display: block; background: var(--fill-2); border-radius: 999px 0 0 999px; }
+  .meter i.fast { background: repeating-linear-gradient(45deg, #aaa 0 3px, #ddd 3px 6px); }
+  .meter i.over { background: repeating-linear-gradient(45deg, #777 0 3px, #bbb 3px 6px); border-radius: 0; }
+  .today { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--ink); }
+  .today::after { content: "今天"; position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 10px; white-space: nowrap; }
+  .card > .meter { margin-top: 20px; }
+  .prog .today::after { display: none; }
+  .meter-cap { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+  .banner { border: 1.5px dashed var(--ink); border-radius: 12px; padding: 8px 10px; margin-bottom: 12px; display: flex; justify-content: space-between; font-size: 13px; }
+
+  .day { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-weight: 700; padding: 8px 2px 4px; border-bottom: 1px solid var(--fill-2); }
+  .entry { display: flex; align-items: center; gap: 8px; padding: 8px 2px; border-bottom: 1px dashed var(--fill-2); }
+  .entry .em { width: 30px; height: 30px; border: 1.5px solid var(--line); border-radius: 9px; display: grid; place-items: center; flex: none; }
+  .entry .txt { flex: 1; min-width: 0; }
+  .entry .txt b { font-size: 13px; }
+  .entry .txt div { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry .amt { font-weight: 700; }
+  .entry .amt.in { text-decoration: underline; text-decoration-style: double; }
+  .tag { font-size: 10px; border: 1px solid var(--line); border-radius: 6px; padding: 0 4px; color: var(--muted); margin-left: 4px; }
+
+  /* 底部分頁列 */
+  .tabbar { border-top: 2px solid var(--ink); display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; padding: 6px 4px 10px; background: #fafafa; }
+  .tabbar.four { grid-template-columns: repeat(4, 1fr); }
+  .tab { text-align: center; font-size: 10px; color: var(--muted); }
+  .tab i { display: block; font-style: normal; font-size: 18px; line-height: 1.2; }
+  .tab.on { color: var(--ink); font-weight: 700; }
+  .tab.plus { position: relative; }
+  .tab.plus i { width: 50px; height: 50px; margin: -26px auto 0; border: 2px solid var(--ink); border-bottom-width: 5px; border-radius: 50%; background: var(--fill); display: grid; place-items: center; font-size: 26px; color: var(--ink); }
+  .fab { position: absolute; right: 16px; bottom: 76px; width: 54px; height: 54px; border: 2px solid var(--ink); border-bottom-width: 5px; border-radius: 50%; background: var(--fill); display: grid; place-items: center; font-size: 26px; }
+
+  /* 底部面板 */
+  .dim { background: #0002; height: 70px; }
+  .dim.tall { height: 160px; }
+  .sheet { border-top: 2px solid var(--ink); border-radius: 20px 20px 0 0; padding: 10px 14px 14px; margin-top: -18px; background: #fff; position: relative; }
+  .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 10px; }
+  .sheet-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid var(--ink); border-radius: 12px; overflow: hidden; font-size: 13px; text-align: center; }
+  .seg span { padding: 6px; }
+  .seg span.on { background: var(--fill-2); font-weight: 700; }
+  .seg.mini { width: 140px; }
+  .amount-big { text-align: right; font-size: 30px; font-weight: 800; padding: 6px 4px; border-bottom: 2px solid var(--ink); margin: 8px 0; }
+  .amount-big small { font-size: 14px; color: var(--muted); font-weight: 700; margin-right: 4px; }
+  .amount-big .expr { display: block; font-size: 12px; color: var(--muted); font-weight: 600; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .chip { border: 1.5px solid var(--line); border-radius: 999px; padding: 3px 10px; font-size: 12px; white-space: nowrap; }
+  .chip.on { border: 2px solid var(--ink); background: var(--fill-2); font-weight: 700; }
+  .chip.add { border-style: dashed; color: var(--muted); }
+  .chips-label { font-size: 11px; color: var(--muted); margin: 2px 0 4px; }
+  .cats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 6px; }
+  .cat { border: 1.5px solid var(--line); border-radius: 12px; text-align: center; padding: 4px 0; font-size: 10px; }
+  .cat i { display: block; font-style: normal; font-size: 17px; }
+  .cat.on { border: 2px solid var(--ink); border-bottom-width: 4px; background: var(--fill-2); font-weight: 700; }
+  .subs { border-left: 3px solid var(--fill-2); padding-left: 8px; }
+  .meta { display: flex; gap: 6px; margin: 4px 0 8px; }
+  .meta .field { flex: 1; }
+  .field { border: 1.5px solid var(--line); border-radius: 10px; padding: 6px 8px; min-height: 34px; display: flex; align-items: center; gap: 4px; font-size: 13px; }
+  .field .ph { color: var(--muted); }
+  .keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
+  .keypad span { border: 1.5px solid var(--line); border-bottom-width: 3px; border-radius: 10px; text-align: center; padding: 6px 0; font-weight: 700; font-size: 14px; }
+  .keypad span.op { background: var(--fill); }
+  .keypad span.eq { background: var(--fill-2); }
+  .btn { border: 2px solid var(--ink); border-bottom-width: 4px; border-radius: 12px; text-align: center; padding: 8px; font-weight: 700; }
+  .btn.ghost { border-color: var(--line); color: var(--muted); }
+  .btn.danger { border-style: dashed; }
+  .btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+  .toast { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); border: 1.5px solid var(--ink); border-radius: 999px; background: #fff; padding: 4px 12px; font-size: 12px; white-space: nowrap; box-shadow: 0 4px 10px #0002; }
+
+  /* 統計 */
+  .verdict { display: flex; gap: 10px; align-items: center; }
+  .bubble { border: 1.5px solid var(--line); border-radius: 12px; padding: 6px 10px; font-size: 13px; flex: 1; }
+  .prog { padding: 8px 0; border-bottom: 1px dashed var(--fill-2); }
+  .prog-top { display: flex; justify-content: space-between; font-size: 13px; }
+  .prog-top b { font-weight: 700; }
+  .prog .meter { margin: 6px 0 2px; height: 12px; }
+  .prog-cap { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  .prog-sub { margin: 6px 0 0 18px; font-size: 12px; color: var(--muted); }
+  .prog-sub div { display: flex; justify-content: space-between; }
+  .flag { font-size: 11px; font-weight: 700; border: 1px solid var(--ink); border-radius: 6px; padding: 0 4px; margin-left: 4px; }
+  .kv { display: flex; justify-content: space-between; font-size: 13px; padding: 2px 0; }
+  .donut-wrap { display: flex; justify-content: center; margin: 6px 0 10px; }
+  .donut {
+    width: 170px; height: 170px; border-radius: 50%;
+    background: conic-gradient(#555 0 43%, #888 43% 89%, #aaa 89% 93%, #ccc 93% 97%, #e2e2e2 97% 100%);
+    display: grid; place-items: center; border: 2px solid var(--ink);
+  }
+  .donut div { width: 100px; height: 100px; border-radius: 50%; background: #fff; border: 2px solid var(--ink); display: grid; place-items: center; text-align: center; font-size: 11px; color: var(--muted); line-height: 1.3; }
+  .donut div b { display: block; color: var(--ink); font-size: 16px; }
+  .legend div { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 3px 0; }
+  .legend i { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--ink); flex: none; }
+  .legend span:last-child { margin-left: auto; color: var(--muted); }
+  .crumb { font-size: 12px; color: var(--note); margin-bottom: 4px; }
+
+  /* 列表選單 */
+  .group-label { font-size: 11px; color: var(--muted); margin: 10px 2px 4px; font-weight: 700; }
+  .list { border: 1.5px solid var(--line); border-bottom-width: 4px; border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
+  .li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--fill-2); font-size: 13px; }
+  .li:last-child { border-bottom: 0; }
+  .li .ic { width: 26px; height: 26px; border: 1.5px solid var(--line); border-radius: 8px; display: grid; place-items: center; font-size: 13px; flex: none; }
+  .li .sub { color: var(--muted); font-size: 11px; }
+  .li .r { margin-left: auto; color: var(--muted); font-size: 12px; display: flex; gap: 6px; align-items: center; }
+  .li.danger { color: #b00; }
+  .handle { color: var(--muted); }
+  .toggle { width: 32px; height: 18px; border-radius: 999px; border: 1.5px solid var(--ink); position: relative; background: var(--fill-2); flex: none; }
+  .toggle::after { content: ""; position: absolute; top: 1px; right: 1px; width: 13px; height: 13px; border-radius: 50%; background: var(--ink); }
+  .toggle.off { background: #fff; }
+  .toggle.off::after { right: auto; left: 1px; background: var(--line); }
+
+  /* 註解 */
+  .n { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--note); color: #fff; font-size: 11px; font-weight: 700; flex: none; vertical-align: middle; }
+  .notes { margin: 12px 0 0; padding: 0; list-style: none; max-width: 360px; }
+  .notes li { display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+  .compare { max-width: 360px; }
+  .compare .phone { margin-bottom: 8px; }
+  .compare p { font-size: 12px; margin: 0 0 16px; }
+  .pill-note { display: inline-block; font-size: 11px; color: var(--note); border: 1px solid #cddcf7; border-radius: 6px; padding: 0 6px; }
+</style>
+</head>
+<body>
+
+<header class="doc">
+  <h1>小金芽 — Wireframe v2：實際收支記帳</h1>
+  <p>對應 docs/SPEC-v2-draft.md · 低保真，只看結構與互動 · 灰階深淺代表狀態（實際配色沿用 design/tokens.css）· 2026-10-24</p>
+</header>
+
+<nav class="toc">
+  <a href="#nav">0 導覽比較</a>
+  <a href="#ledger">A 記帳首頁</a>
+  <a href="#add">B 記一筆</a>
+  <a href="#edit">C 編輯／待確認</a>
+  <a href="#stats">D 統計</a>
+  <a href="#more">E 更多</a>
+  <a href="#budget">F 預算頁</a>
+</nav>
+
+<!-- ======================= 0 導覽 ======================= -->
+<h2 class="group" id="nav">0. 底部導覽：兩種做法比較</h2>
+<div class="board">
+  <section class="screen compare">
+    <h3>方案 1 <span>· 5 格：記帳｜統計｜＋｜預算｜更多</span></h3>
+    <div class="phone">
+      <div class="tabbar">
+        <div class="tab on"><i>📒</i>記帳</div>
+        <div class="tab"><i>📊</i>統計</div>
+        <div class="tab plus"><i>＋</i></div>
+        <div class="tab"><i>🎯</i>預算</div>
+        <div class="tab"><i>⋯</i>更多</div>
+      </div>
+    </div>
+    <p>「＋」固定在正中間，任何分頁都能一鍵記帳。「更多」是一個獨立分頁，內容見 E1。</p>
+  </section>
+
+  <section class="screen compare">
+    <h3>方案 2 <span>· 3 格＋浮動按鈕，設定放右上角</span></h3>
+    <div class="phone" style="height:170px">
+      <div class="scroll">
+        <div class="bar"><span class="title">記帳</span><span class="icon-btn">⚙︎</span></div>
+      </div>
+      <div class="fab" style="bottom:66px">＋</div>
+      <div class="tabbar" style="grid-template-columns:repeat(3,1fr)">
+        <div class="tab on"><i>📒</i>記帳</div>
+        <div class="tab"><i>📊</i>統計</div>
+        <div class="tab"><i>🎯</i>預算</div>
+      </div>
+    </div>
+    <p>分頁比較少，但「＋」浮在內容上，可能擋住最後一筆紀錄；設定藏在右上角 ⚙︎，比較不容易找到。</p>
+  </section>
+
+  <section class="screen">
+    <h3>建議：方案 1</h3>
+    <ol class="notes">
+      <li><span class="n">·</span>「更多」裡的項目雖然多，但都不常用。用分組清單呈現（E1），一頁就看得完，不會雜亂。</li>
+      <li><span class="n">·</span>「＋」放在分頁列中間，大拇指最容易按到，也不會擋住內容。</li>
+      <li><span class="n">·</span>以下所有畫面都以方案 1 繪製。</li>
+    </ol>
+  </section>
+</div>
+
+<!-- ======================= A 記帳首頁 ======================= -->
+<h2 class="group" id="ledger">A. 記帳首頁（打開 App 預設顯示）</h2>
+<div class="board">
+  <section class="screen">
+    <h3>A1. 本月明細 <span>· 10 月進行中</span></h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="title">記帳</span><span class="icon-btn">🔍</span></div>
+        <div class="month"><span>‹</span>2026 年 10 月<span>›</span> <span class="n">1</span></div>
+
+        <div class="card">
+          <div class="overview">
+            <div class="mascot">水豚<br>平靜</div>
+            <div class="stats3">
+              <div>收入<b class="num">47,400</b></div>
+              <div>支出<b class="num">28,350</b></div>
+              <div>結餘<b class="num">19,050</b></div>
+            </div>
+          </div>
+          <div class="meter"><i style="width:68%"></i><span class="today" style="left:77%"></span></div>
+          <div class="meter-cap"><span>支出預算 41,440 · 已用 68%</span><span><span class="n">2</span></span></div>
+        </div>
+
+        <div class="banner"><span>⏰ 2 筆固定支出待確認</span><span>› <span class="n">3</span></span></div>
+
+        <div class="day"><span>10/24（五）</span><span class="num">−220</span></div>
+        <div class="entry"><span class="em">🍙</span><div class="txt"><b>吃飯</b><div>午餐便當</div></div><span class="amt num">−120</span></div>
+        <div class="entry"><span class="em">🍙</span><div class="txt"><b>飲料</b><div>珍奶</div></div><span class="amt num">−65</span></div>
+        <div class="entry"><span class="em">🚌</span><div class="txt"><b>交通</b><div>捷運</div></div><span class="amt num">−35</span></div>
+        <div class="day"><span>10/05（日）</span><span class="num">+47,400 / −13,000</span></div>
+        <div class="entry"><span class="em">💰</span><div class="txt"><b>薪水<span class="tag">固定</span></b><div>&nbsp;</div></div><span class="amt in num">+47,400</span> <span class="n">4</span></div>
+        <div class="entry"><span class="em">🏠</span><div class="txt"><b>房租<span class="tag">固定</span></b><div>&nbsp;</div></div><span class="amt num">−13,000</span></div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><i>📒</i>記帳</div>
+        <div class="tab"><i>📊</i>統計</div>
+        <div class="tab plus"><i>＋</i></div>
+        <div class="tab"><i>🎯</i>預算</div>
+        <div class="tab"><i>⋯</i>更多</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">1</span>左右箭頭切換月份；也可以在明細區左右滑動切換。</li>
+      <li><span class="n">2</span>進度條＝本月支出 ÷ 支出預算總額。直線標示「今天」在這個月的位置（24 / 31 天 ≈ 77%）；進度條在直線左邊就代表花錢速度正常。</li>
+      <li><span class="n">3</span>只有在有固定收支待確認時才出現，點進去是 C2。</li>
+      <li><span class="n">4</span>收入是薄荷綠、前面加「+」（灰階稿以雙底線表示）；自動產生的紀錄有「固定」標籤。點任何一筆進入 C1 編輯。</li>
+      <li><span class="n">·</span>🔍 搜尋與篩選：可以用備註搜尋，或只看某個分類。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>A2. 總覽卡的三種狀態</h3>
+    <div class="card">
+      <div class="overview"><div class="mascot">水豚<br>平靜</div><div class="bubble">花錢速度剛好</div></div>
+      <div class="meter"><i style="width:60%"></i><span class="today" style="left:77%"></span></div>
+      <div class="meter-cap"><span>正常：在今天線的左邊</span></div>
+    </div>
+    <div class="card">
+      <div class="overview"><div class="mascot">水豚<br>冒汗</div><div class="bubble">花得有點快喔</div></div>
+      <div class="meter"><i class="fast" style="width:92%"></i><span class="today" style="left:77%"></span></div>
+      <div class="meter-cap"><span>花太快：超過今天線 15 個百分點以上</span></div>
+    </div>
+    <div class="card">
+      <div class="overview"><div class="mascot">水豚<br>慌張</div><div class="bubble">超出預算 2,300</div></div>
+      <div class="meter"><i style="width:88%"></i><i class="over" style="width:12%"></i><span class="today" style="left:77%"></span></div>
+      <div class="meter-cap"><span>超支：斜紋是超出的部分</span></div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>過去的月份不顯示今天線，水豚依月結果顯示：全部在預算內 → 頂柚子泡溫泉；有超支 → 冒汗。</li>
+      <li><span class="n">·</span>「慌張」是新的水豚表情，視覺設計時再畫。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>A3. 第一次使用／空的月份</h3>
+    <div class="phone" style="height:430px">
+      <div class="scroll">
+        <div class="bar"><span class="title">記帳</span><span class="icon-btn">🔍</span></div>
+        <div class="month"><span>‹</span>2026 年 11 月<span>›</span></div>
+        <div style="text-align:center;padding:40px 10px">
+          <div class="mascot" style="margin:0 auto 10px;width:70px;height:70px">水豚<br>睡覺</div>
+          <b>這個月還沒有紀錄</b>
+          <p class="muted small">按下方的 ＋ 記下第一筆吧</p>
+        </div>
+        <div class="banner"><span>💾 上次備份是 32 天前</span><span>備份 ›</span></div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><i>📒</i>記帳</div><div class="tab"><i>📊</i>統計</div><div class="tab plus"><i>＋</i></div><div class="tab"><i>🎯</i>預算</div><div class="tab"><i>⋯</i>更多</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>每月第一次打開時，如果超過 30 天沒備份，就顯示備份提醒，可以關掉。</li>
+    </ol>
+  </section>
+</div>
+
+<!-- ======================= B 記一筆 ======================= -->
+<h2 class="group" id="add">B. 記一筆（按中間的 ＋）</h2>
+<div class="board">
+  <section class="screen">
+    <h3>B1. 記一筆支出 <span>· 已填金額、已選分類</span></h3>
+    <div class="phone">
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-title"><div class="seg mini"><span class="on">支出</span><span>收入</span></div><span class="muted">✕</span></div>
+        <div class="amount-big num"><span class="expr">100 + 20</span><small>NT$</small>120 <span class="n">1</span></div>
+
+        <div class="chips-label">最近常用 <span class="n">2</span></div>
+        <div class="chips"><span class="chip on">🍙 吃飯</span><span class="chip">🍙 飲料</span><span class="chip">🚌 捷運</span><span class="chip">🎮 遊戲</span></div>
+
+        <div class="chips-label">全部分類</div>
+        <div class="cats">
+          <div class="cat on"><i>🍙</i>生活費</div><div class="cat"><i>🏠</i>居住</div><div class="cat"><i>🚌</i>交通</div><div class="cat"><i>🎮</i>娛樂</div><div class="cat"><i>⋯</i>更多</div>
+        </div>
+        <div class="subs chips"><span class="chip on">吃飯</span><span class="chip">飲料</span><span class="chip">日用品</span><span class="chip add">＋</span> <span class="n">3</span></div>
+
+        <div class="meta"><span class="field">📅 今天 10/24 ▾</span><span class="field"><span class="ph">✏️ 備註</span></span></div>
+
+        <div class="keypad">
+          <span>7</span><span>8</span><span>9</span><span class="op">÷</span>
+          <span>4</span><span>5</span><span>6</span><span class="op">×</span>
+          <span>1</span><span>2</span><span>3</span><span class="op">−</span>
+          <span>0</span><span>.</span><span class="op">⌫</span><span class="op">+</span>
+        </div>
+        <div class="btn">儲存 <span class="n">4</span></div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">1</span>大字是金額，上方小字是算式。打開面板就能直接按數字，不用先點金額欄位。</li>
+      <li><span class="n">2</span>最近常用的「大分類＋小分類」組合，點一下兩個都選好。</li>
+      <li><span class="n">3</span>選了大分類才出現它的小分類；小分類可以不選。「＋」可以當場新增小分類。</li>
+      <li><span class="n">4</span>金額 &gt; 0 而且選了分類，「儲存」才能按。算式還沒按 = 也可以儲存，會先算出結果。</li>
+      <li><span class="n">·</span><b>金額和分類沒有先後順序</b>：先按數字或先點分類都可以，已經輸入的另一邊都不會被清掉（見 B2）。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>B2. 沒有先後順序 <span>· 兩種操作結果相同</span></h3>
+    <div class="card">
+      <div class="card-head"><b>先輸入金額</b></div>
+      <div class="small">① 按 1、2、0 → 金額 120<br>② 點「🍙 生活費」→ 金額仍是 120<br>③ 點「吃飯」→ 金額仍是 120<br>④ 儲存</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><b>先選分類</b></div>
+      <div class="small">① 點「🍙 吃飯」（最近常用）→ 分類選好<br>② 按 1、2、0 → 分類仍是 吃飯<br>③ 儲存</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><b>中途修改也不會清掉</b></div>
+      <div class="small">・改分類：金額、日期、備註都保留<br>・切換「支出／收入」：金額保留，分類清空（兩邊的分類不同）<br>・改日期或備註：金額、分類都保留</div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>關掉面板（✕ 或點外面）時，如果已經填了東西，會問「要放棄這筆嗎？」。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>B3. 記一筆收入</h3>
+    <div class="phone">
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-title"><div class="seg mini"><span>支出</span><span class="on">收入</span></div><span class="muted">✕</span></div>
+        <div class="amount-big num"><small>NT$</small>3,000</div>
+        <div class="chips-label">收入分類</div>
+        <div class="chips"><span class="chip">💰 薪水</span><span class="chip on">💼 兼職</span><span class="chip">📈 股息</span><span class="chip add">＋ 新增</span></div>
+        <div class="meta"><span class="field">📅 10/20 ▾</span><span class="field">✏️ 家教</span></div>
+        <div class="keypad">
+          <span>7</span><span>8</span><span>9</span><span class="op">÷</span>
+          <span>4</span><span>5</span><span>6</span><span class="op">×</span>
+          <span>1</span><span>2</span><span>3</span><span class="op">−</span>
+          <span>0</span><span>.</span><span class="op">⌫</span><span class="op">+</span>
+        </div>
+        <div class="btn">儲存</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>收入分類只有一層，所以沒有小分類列，畫面比較短。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>B4. 選日期</h3>
+    <div class="phone">
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-title"><b>選日期</b><span class="muted">✕</span></div>
+        <div class="chips"><span class="chip on">今天</span><span class="chip">昨天</span><span class="chip">前天</span></div>
+        <div class="month"><span>‹</span>2026 年 10 月<span>›</span></div>
+        <div class="keypad" style="grid-template-columns:repeat(7,1fr);gap:3px">
+          <span class="op">日</span><span class="op">一</span><span class="op">二</span><span class="op">三</span><span class="op">四</span><span class="op">五</span><span class="op">六</span>
+          <span style="border:0"></span><span style="border:0"></span><span style="border:0"></span><span>1</span><span>2</span><span>3</span><span>4</span>
+          <span>…</span><span>…</span><span>…</span><span>…</span><span>…</span><span>…</span><span>…</span>
+          <span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span class="eq">24</span><span>25</span>
+        </div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>最常用的是今天、昨天、前天，做成快捷按鈕；其他日期用月曆選。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>B5. 儲存後</h3>
+    <div class="phone" style="height:260px">
+      <div class="scroll">
+        <div class="day"><span>10/24（五）</span><span class="num">−340</span></div>
+        <div class="entry" style="background:var(--fill)"><span class="em">🍙</span><div class="txt"><b>吃飯</b><div>&nbsp;</div></div><span class="amt num">−120</span></div>
+        <div class="entry"><span class="em">🍙</span><div class="txt"><b>吃飯</b><div>午餐便當</div></div><span class="amt num">−120</span></div>
+      </div>
+      <div class="toast">✅ 已記錄 −120　<u>再記一筆</u>　<u>復原</u></div>
+      <div class="tabbar">
+        <div class="tab on"><i>📒</i>記帳</div><div class="tab"><i>📊</i>統計</div><div class="tab plus"><i>＋</i></div><div class="tab"><i>🎯</i>預算</div><div class="tab"><i>⋯</i>更多</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>面板關閉，新紀錄短暫亮起。提示停留約 4 秒，可以「再記一筆」（日期沿用，其他清空）或「復原」（刪除剛才那筆）。</li>
+    </ol>
+  </section>
+</div>
+
+<!-- ======================= C 編輯／待確認 ======================= -->
+<h2 class="group" id="edit">C. 編輯紀錄與固定收支待確認</h2>
+<div class="board">
+  <section class="screen">
+    <h3>C1. 編輯一筆紀錄</h3>
+    <div class="phone">
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-title"><b>編輯紀錄</b><span class="muted">✕</span></div>
+        <div class="amount-big num"><small>NT$</small>120</div>
+        <div class="cats">
+          <div class="cat on"><i>🍙</i>生活費</div><div class="cat"><i>🏠</i>居住</div><div class="cat"><i>🚌</i>交通</div><div class="cat"><i>🎮</i>娛樂</div><div class="cat"><i>⋯</i>更多</div>
+        </div>
+        <div class="subs chips"><span class="chip on">吃飯</span><span class="chip">飲料</span><span class="chip">日用品</span></div>
+        <div class="meta"><span class="field">📅 10/24 ▾</span><span class="field">✏️ 午餐便當</span></div>
+        <div class="small muted" style="margin-bottom:8px">點金額會出現計算機鍵盤</div>
+        <div class="btns"><div class="btn danger">🗑 刪除</div><div class="btn">儲存</div></div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>和「記一筆」同一個面板，差別是標題、預先填好內容，以及多了刪除按鈕。</li>
+      <li><span class="n">·</span>計算機鍵盤收起來，畫面比較清楚；點金額才展開。</li>
+      <li><span class="n">·</span>刪除後顯示「已刪除　<u>復原</u>」，不另外跳確認視窗。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>C2. 固定收支待確認</h3>
+    <div class="phone">
+      <div class="dim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-title"><b>待確認的固定收支</b><span class="muted">✕</span></div>
+        <div class="card">
+          <div class="card-head"><b>💡 電費</b><span class="muted small">每月 15 號 · 居住</span></div>
+          <div class="field" style="margin-bottom:8px"><span class="ph">NT$ 本月金額</span></div>
+          <div class="btns"><div class="btn ghost">這個月略過</div><div class="btn">記入</div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><b>📱 手機帳單</b><span class="muted small">每月 20 號 · 生活費</span></div>
+          <div class="field" style="margin-bottom:8px">NT$ 599 <span class="muted small">（上個月）</span></div>
+          <div class="btns"><div class="btn ghost">這個月略過</div><div class="btn">記入</div></div>
+        </div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>金額預先帶入上個月的數字，一樣就直接按「記入」。</li>
+      <li><span class="n">·</span>「自動記入」的固定收支不會出現在這裡，而是打開 App 時顯示「✅ 已自動記入：房租 13,000」。</li>
+    </ol>
+  </section>
+</div>
+
+<!-- ======================= D 統計 ======================= -->
+<h2 class="group" id="stats">D. 統計</h2>
+<div class="board">
+  <section class="screen">
+    <h3>D1. 預算比對 <span>· 10 月進行中</span></h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="title">統計</span></div>
+        <div class="month"><span>‹</span>2026 年 10 月<span>›</span></div>
+        <div class="field" style="margin-bottom:10px;justify-content:space-between"><span>預算：我的方案 ▾</span><span class="muted small">進行中 <span class="n">1</span></span></div>
+
+        <div class="card verdict"><div class="mascot">水豚<br>冒汗</div><div class="bubble">生活費花得有點快，其他都還好 <span class="n">2</span></div></div>
+
+        <div class="seg" style="margin-bottom:8px"><span class="on">預算比對</span><span>圓餅圖</span></div>
+
+        <div class="prog">
+          <div class="prog-top"><b>🍙 生活費 <span class="flag">⚡花太快</span></b><span class="num">12,300 / 14,220</span></div>
+          <div class="meter"><i class="fast" style="width:87%"></i><span class="today" style="left:77%"></span></div>
+          <div class="prog-cap"><span>87%</span><span>剩 1,920 ▾</span></div>
+          <div class="prog-sub"><div><span>吃飯</span><span>9,800</span></div><div><span>飲料</span><span>1,900</span></div><div><span>日用品</span><span>600</span></div></div>
+        </div>
+        <div class="prog">
+          <div class="prog-top"><b>🏠 居住</b><span class="num">13,000 / 13,000</span></div>
+          <div class="meter"><i style="width:100%"></i></div>
+          <div class="prog-cap"><span>100%</span><span>剛好</span></div>
+        </div>
+        <div class="prog">
+          <div class="prog-top"><b>🎮 娛樂</b><span class="num">1,200 / 4,740</span></div>
+          <div class="meter"><i style="width:25%"></i><span class="today" style="left:77%"></span></div>
+          <div class="prog-cap"><span>25%</span><span>剩 3,540</span></div>
+        </div>
+        <div class="prog">
+          <div class="prog-top"><b>🎁 禮物 <span class="flag">預算外</span></b><span class="num">850 / —</span></div>
+          <div class="prog-cap"><span>這個方案沒有這個分類 <span class="n">3</span></span></div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="card-head"><b>收入</b></div>
+          <div class="kv"><span>預算</span><span class="num">47,400</span></div>
+          <div class="kv"><span>實際</span><span class="num">47,400</span></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><b>🐷 儲蓄</b></div>
+          <div class="kv"><span>目標</span><span class="num">9,480</span></div>
+          <div class="kv"><span>目前結餘（收入 − 支出）</span><span class="num">19,050</span></div>
+          <div class="small muted">月底才會知道實際存下多少</div>
+        </div>
+        <div class="card">
+          <div class="card-head"><b>💡 調整建議</b><span class="n">4</span></div>
+          <div class="small">・生活費照目前速度，月底會超出約 1,600<br>・娛樂只用了 25%，預算可能給太多</div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><i>📒</i>記帳</div><div class="tab on"><i>📊</i>統計</div><div class="tab plus"><i>＋</i></div><div class="tab"><i>🎯</i>預算</div><div class="tab"><i>⋯</i>更多</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">1</span>這個月用哪個方案當預算；點開可以更換。過去的月份顯示「已鎖定 🔒」，更換時要二次確認。</li>
+      <li><span class="n">2</span>水豚用一句話總結這個月的狀況。</li>
+      <li><span class="n">3</span>這個方案沒有的分類也有支出時，列在最下方。</li>
+      <li><span class="n">4</span>只顯示建議，不會自動修改方案。</li>
+      <li><span class="n">·</span>進度條上的直線是「今天」的位置，和記帳首頁一樣；過去的月份不顯示。</li>
+      <li><span class="n">·</span>每一列點一下展開小分類（如生活費），再點一下收起。</li>
+      <li><span class="n">·</span>儲蓄類的分類（🐷 儲蓄）不出現在進度條列表，改在「儲蓄」卡片比對。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>D2. 圓餅圖（甜甜圈）</h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="title">統計</span></div>
+        <div class="month"><span>‹</span>2026 年 10 月<span>›</span></div>
+        <div class="seg" style="margin-bottom:8px"><span>預算比對</span><span class="on">圓餅圖</span></div>
+        <div class="donut-wrap"><div class="donut"><div>本月支出<b class="num">28,350</b></div></div></div>
+        <div class="legend">
+          <div><i style="background:#555"></i><span>🍙 生活費</span><span class="num">12,300 · 43%</span></div>
+          <div><i style="background:#888"></i><span>🏠 居住</span><span class="num">13,000 · 46%</span></div>
+          <div><i style="background:#aaa"></i><span>🎮 娛樂</span><span class="num">1,200 · 4%</span></div>
+          <div><i style="background:#ccc"></i><span>🎁 禮物</span><span class="num">850 · 3%</span></div>
+          <div><i style="background:#e2e2e2"></i><span>🚌 交通</span><span class="num">1,000 · 4%</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><i>📒</i>記帳</div><div class="tab on"><i>📊</i>統計</div><div class="tab plus"><i>＋</i></div><div class="tab"><i>🎯</i>預算</div><div class="tab"><i>⋯</i>更多</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>點甜甜圈的一塊或圖例的一列，切換成那個大分類的小分類佔比（D3）。</li>
+      <li><span class="n">·</span>上方可以切換「支出／收入」；收入的圓餅顯示薪水、兼職等佔比。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>D3. 點開「生活費」</h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="crumb">‹ 全部支出</div>
+        <div class="donut-wrap"><div class="donut" style="background:conic-gradient(#555 0 80%, #999 80% 95%, #ddd 95% 100%)"><div>🍙 生活費<b class="num">12,300</b></div></div></div>
+        <div class="legend">
+          <div><i style="background:#555"></i><span>吃飯</span><span class="num">9,800 · 80%</span></div>
+          <div><i style="background:#999"></i><span>飲料</span><span class="num">1,900 · 15%</span></div>
+          <div><i style="background:#ddd"></i><span>日用品</span><span class="num">600 · 5%</span></div>
+        </div>
+        <div class="btn ghost" style="margin-top:10px">看這個分類的所有紀錄 ›</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>「看所有紀錄」會跳到記帳頁，並篩選成只有生活費。</li>
+    </ol>
+  </section>
+</div>
+
+<!-- ======================= E 更多 ======================= -->
+<h2 class="group" id="more">E. 更多（設定類功能）</h2>
+<div class="board">
+  <section class="screen">
+    <h3>E1. 更多 <span>· 用分組清單整理</span></h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="title">更多</span></div>
+        <div class="group-label">記帳設定</div>
+        <div class="list">
+          <div class="li"><span class="ic">🗂</span><div>分類管理<div class="sub">12 個大分類 · 收入分類 3 個</div></div><span class="r">›</span></div>
+          <div class="li"><span class="ic">🔁</span><div>固定收支<div class="sub">4 筆啟用中</div></div><span class="r">›</span></div>
+        </div>
+        <div class="group-label">資料</div>
+        <div class="list">
+          <div class="li"><span class="ic">💾</span><div>備份與還原<div class="sub">上次備份：12 天前</div></div><span class="r">›</span></div>
+          <div class="li danger"><span class="ic">🧹</span><div>清除全部資料</div><span class="r">›</span></div>
+        </div>
+        <div class="group-label">關於</div>
+        <div class="list">
+          <div class="li"><span class="ic">🦫</span><div>小金芽<div class="sub">版本 2.0.0 · 資料只存在這台裝置</div></div></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><i>📒</i>記帳</div><div class="tab"><i>📊</i>統計</div><div class="tab plus"><i>＋</i></div><div class="tab"><i>🎯</i>預算</div><div class="tab on"><i>⋯</i>更多</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>目前只有 4 個項目，分成 3 組，一頁就看完。之後的功能（載具匯入、主題顏色等）也加在這裡，不會塞爆分頁列。</li>
+      <li><span class="n">·</span>每一項下方的小字顯示目前狀態，不用點進去就知道。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>E2. 分類管理</h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="back">‹ 更多</span><span class="title">分類管理</span><span style="width:40px"></span></div>
+        <div class="seg" style="margin:8px 0 10px"><span class="on">支出／儲蓄</span><span>收入</span></div>
+        <div class="list">
+          <div class="li"><span class="handle">⠿</span><span class="ic">🍙</span><div>生活費<div class="sub">吃飯、飲料、日用品</div></div><span class="r">支出 ›</span></div>
+          <div class="li"><span class="handle">⠿</span><span class="ic">🏠</span><div>居住<div class="sub">房租、水電</div></div><span class="r">支出 ›</span></div>
+          <div class="li"><span class="handle">⠿</span><span class="ic">🚌</span><div>交通<div class="sub">捷運、加油</div></div><span class="r">支出 ›</span></div>
+          <div class="li"><span class="handle">⠿</span><span class="ic">🎮</span><div>娛樂<div class="sub">—</div></div><span class="r">支出 ›</span></div>
+          <div class="li"><span class="handle">⠿</span><span class="ic">🐷</span><div>儲蓄<div class="sub">—</div></div><span class="r">儲蓄 ›</span></div>
+        </div>
+        <div class="btn ghost">＋ 新增大分類</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>拖曳 ⠿ 調整順序，記一筆時的分類也照這個順序排。</li>
+      <li><span class="n">·</span>右側標示類型（支出／儲蓄）。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>E3. 編輯大分類</h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="back">‹ 分類</span><span class="title">生活費</span><span style="width:40px"></span></div>
+        <div class="row" style="display:flex;gap:8px;margin:10px 0"><span class="icon-btn" style="width:44px;height:44px;font-size:20px">🍙</span><span class="field" style="flex:1">生活費</span></div>
+        <div class="chips-label">類型</div>
+        <div class="seg" style="margin-bottom:12px"><span class="on">支出</span><span>儲蓄</span></div>
+        <div class="chips-label">小分類</div>
+        <div class="list">
+          <div class="li"><span class="handle">⠿</span><div>吃飯</div><span class="r">✕</span></div>
+          <div class="li"><span class="handle">⠿</span><div>飲料</div><span class="r">✕</span></div>
+          <div class="li"><span class="handle">⠿</span><div>日用品</div><span class="r">✕</span></div>
+          <div class="li"><span class="muted">＋ 新增小分類</span></div>
+        </div>
+        <div class="btn danger" style="margin-top:6px">🗑 刪除這個分類</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>改名稱或 emoji，所有方案、紀錄都會一起更新。</li>
+      <li><span class="n">·</span>刪除時如果已經有紀錄或方案在用，會先請你選一個分類把它們搬過去。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>E4. 固定收支</h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="back">‹ 更多</span><span class="title">固定收支</span><span style="width:40px"></span></div>
+        <div class="group-label">收入</div>
+        <div class="list">
+          <div class="li"><span class="ic">💰</span><div>薪水<div class="sub">每月 5 號 · 自動記入</div></div><span class="r num">+47,400 <span class="toggle"></span></span></div>
+        </div>
+        <div class="group-label">支出</div>
+        <div class="list">
+          <div class="li"><span class="ic">🏠</span><div>房租<div class="sub">每月 5 號 · 自動記入</div></div><span class="r num">13,000 <span class="toggle"></span></span></div>
+          <div class="li"><span class="ic">💡</span><div>電費<div class="sub">每月 15 號 · 提醒確認</div></div><span class="r">金額不固定 <span class="toggle"></span></span></div>
+          <div class="li"><span class="ic">📺</span><div>串流訂閱<div class="sub">每月 1 號 · 自動記入</div></div><span class="r num">390 <span class="toggle off"></span></span></div>
+        </div>
+        <div class="btn ghost">＋ 新增固定收支</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>開關可以暫停，例如暫時停用的訂閱。點一列進入 E5 編輯。</li>
+    </ol>
+  </section>
+
+  <section class="screen">
+    <h3>E5. 編輯固定收支</h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="back">‹ 固定收支</span><span class="title">房租</span><span style="width:40px"></span></div>
+        <div class="seg" style="margin:10px 0"><span class="on">支出</span><span>收入</span></div>
+        <div class="field" style="margin-bottom:8px">名稱：房租</div>
+        <div class="field" style="margin-bottom:8px">金額：NT$ 13,000 <span class="muted small">（點開計算機）</span></div>
+        <div class="field" style="margin-bottom:8px">分類：🏠 居住 › 房租</div>
+        <div class="field" style="margin-bottom:8px">每月 5 號 ▾</div>
+        <div class="chips-label">記帳方式</div>
+        <div class="seg" style="margin-bottom:6px"><span class="on">自動記入</span><span>提醒我確認</span></div>
+        <div class="small muted" style="margin-bottom:10px">金額每月都一樣就選自動記入</div>
+        <div class="btns"><div class="btn danger">🗑 刪除</div><div class="btn">儲存</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen">
+    <h3>E6. 備份與還原</h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="back">‹ 更多</span><span class="title">備份與還原</span><span style="width:40px"></span></div>
+        <div class="card" style="margin-top:10px">
+          <div class="card-head"><b>💾 匯出備份</b></div>
+          <div class="small muted" style="margin-bottom:8px">把方案、分類、紀錄、固定收支存成一個檔案。上次備份：12 天前</div>
+          <div class="btn">匯出 goldbud-backup-2026-10-24.json</div>
+        </div>
+        <div class="card">
+          <div class="card-head"><b>📂 從備份還原</b></div>
+          <div class="small muted" style="margin-bottom:8px">選擇備份檔，<b>取代</b>目前全部資料。</div>
+          <div class="btn ghost">選擇檔案…</div>
+        </div>
+        <div class="small muted">建議把備份檔存到 iCloud 雲碟或 Google 雲端硬碟，換手機時才拿得到。</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">·</span>還原前顯示備份檔的內容摘要（日期、幾個方案、幾筆紀錄），再二次確認。</li>
+    </ol>
+  </section>
+</div>
+
+<!-- ======================= F 預算頁 ======================= -->
+<h2 class="group" id="budget">F. 預算頁（現有畫面的調整）</h2>
+<div class="board">
+  <section class="screen">
+    <h3>F1. 預算頁加上分頁列</h3>
+    <div class="phone">
+      <div class="scroll">
+        <div class="bar"><span class="title">預算</span></div>
+        <div class="chips" style="margin:8px 0"><span class="chip on">我的方案 ▾</span><span class="chip">加薪後</span><span class="chip add">＋</span></div>
+        <div class="small muted" style="margin-bottom:8px">📅 10 月的預算使用這個方案 <span class="n">1</span></div>
+        <div class="card"><div class="card-head"><b>收入</b><span class="muted small">2 項</span></div><div class="small muted">（同 v1）</div></div>
+        <div class="card"><div class="card-head"><b>支出分配</b><span class="muted small">已分配 87%</span></div>
+          <div class="entry"><span class="handle">⠿</span><span class="em">🍙</span><div class="txt"><b>生活費</b><div>30% · 14,220</div></div><span class="muted small">分類 ▾</span> <span class="n">2</span></div>
+          <div class="entry"><span class="handle">⠿</span><span class="em">🏠</span><div class="txt"><b>居住</b><div>27.4% · 13,000</div></div><span class="muted small">🔁</span> <span class="n">3</span></div>
+          <div class="small muted" style="padding-top:6px">（其餘同 v1）</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0 10px 8px;border-style:dashed"><div class="small">摘要列（水豚＋進度條）移到分頁列上方 <span class="n">4</span></div></div>
+      <div class="tabbar">
+        <div class="tab"><i>📒</i>記帳</div><div class="tab"><i>📊</i>統計</div><div class="tab plus"><i>＋</i></div><div class="tab on"><i>🎯</i>預算</div><div class="tab"><i>⋯</i>更多</div>
+      </div>
+    </div>
+    <ol class="notes">
+      <li><span class="n">1</span>如果這個方案就是本月的預算，顯示這行提示；其他方案則顯示「設為 10 月的預算」按鈕。</li>
+      <li><span class="n">2</span>支出項目的名稱改成「選分類」：點名稱可以從共用的大分類選，或建立新的大分類。</li>
+      <li><span class="n">3</span>以固定金額填寫的項目，旁邊出現 🔁，點一下就能加入固定收支。</li>
+      <li><span class="n">4</span>右上角的 ⋯ 選單移到「更多」分頁。</li>
+    </ol>
+  </section>
+</div>
+
+</body>
+</html>
