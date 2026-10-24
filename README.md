@@ -18,6 +18,7 @@
 - [x] App v1.1.0：可加到主畫面、離線使用
 - [x] App v1.2.0：改名為小金芽
 - [x] App v1.3.0：拖曳排序、金額計算機、移除 📌
+- [ ] 規格書 v2.0：實際收支記帳（草稿討論中，`docs/SPEC-v2-draft.md`）
 - [x] 放上網路（GitHub Pages）
 
 ## 在電腦上執行
@@ -57,6 +58,7 @@ README.md          專案說明（本檔）
 CHANGELOG.md       每個版本改了什麼
 docs/
   SPEC.md          規格書（目前版本）
+  SPEC-v2-draft.md 規格書 v2.0 草稿（記帳功能，確認後併入 SPEC.md）
   DECISIONS.md     決策紀錄：選了什麼、為什麼
 design/
   tokens.css       顏色、字型、圓角等設計 tokens（App 共用）
