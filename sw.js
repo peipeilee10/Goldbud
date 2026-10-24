@@ -2,7 +2,7 @@
 // 每次發布新版都要更新 VERSION（tests/version.test.js 會檢查和 src/version.js 一致），
 // 手機才會下載新檔案。
 
-const VERSION = "1.3.0";
+const VERSION = "1.3.1";
 const CACHE = `goldbud-${VERSION}`;
 // 舊名稱時期的快取也一起清掉
 const OLD_PREFIXES = ["goldbud-", "budget-capybara-"];
@@ -31,7 +31,8 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(FILES))
+      // cache: "reload" 跳過瀏覽器的 HTTP 暫存，確保存進新版快取的是剛發布的檔案
+      .then((cache) => cache.addAll(FILES.map((f) => new Request(f, { cache: "reload" }))))
       .then(() => self.skipWaiting()),
   );
 });
