@@ -10,17 +10,9 @@
 
 ## 目前進度
 
-- [x] 規格書 v1.6
-- [x] Wireframe v1
-- [x] 水豚吉祥物 v1
-- [x] 視覺設計 v1
-- [x] App v1.0.0
-- [x] App v1.1.0：可加到主畫面、離線使用
-- [x] App v1.2.0：改名為小金芽
-- [x] App v1.3.0：拖曳排序、金額計算機、移除 📌
-- [x] 記帳功能：規格草稿、wireframe v2、視覺設計 v2
-- [ ] 記帳功能：開發 v2.0.0
-- [x] 放上網路（GitHub Pages）
+- [x] v1：預算分配（方案、% ⇄ 金額、計算機、拖曳排序、加到主畫面、離線）
+- [x] v2.0.0：實際收支記帳（記一筆、每月明細、統計與預算比對、圓餅圖、固定收支、分類管理、備份）
+- [ ] 下一步：載具消費明細匯入（規格書 B12 第 2 階段）
 
 ## 在電腦上執行
 
@@ -30,9 +22,9 @@
 npm start
 ```
 
-然後用瀏覽器打開 <http://localhost:8765>。
+然後用瀏覽器打開 <http://localhost:8765>。這個開發用伺服器不會讓瀏覽器暫存檔案，改完重新整理就能看到。
 
-> 小提醒：App 的離線功能（service worker）會把檔案存起來。本機修改後畫面沒變的話，按 Shift + 重新整理，或在瀏覽器開發者工具的 Application → Service Workers 取消註冊。
+> 本機（localhost）預設不啟用離線功能，避免一直看到舊檔；要測離線時，網址加 `?sw`（例如 <http://localhost:8765/?sw>）。
 
 ## 測試
 
@@ -45,32 +37,41 @@ npm test
 ## 資料夾結構
 
 ```
-index.html         App 頁面
+index.html            App 頁面（各分頁的外框、底部分頁列）
 manifest.webmanifest  加到主畫面用的 App 設定
-sw.js              離線快取（service worker）
+sw.js                 離線快取（service worker）
 src/
-  app.js           畫面與互動
-  app.css          App 樣式
-  calc.js          計算（% ⇄ 金額、加總、格式）
-  calculator.js    金額計算機的邏輯
-  drag.js          拖曳排序
-  store.js         資料建立、讀寫、版本轉換
-  version.js       App 版本號
-tests/             單元測試
-README.md          專案說明（本檔）
-CHANGELOG.md       每個版本改了什麼
+  app.js              啟動、分頁切換（網址 #/ledger、#/stats、#/budget、#/more/...）
+  app.css             App 樣式
+  state.js            目前的資料、儲存、通知畫面更新
+  ui.js               共用元件：底部面板、提示條、計算機、emoji 選擇器
+  pickers.js          選分類面板
+  pages/
+    ledger.js         記帳首頁
+    entry.js          記一筆／編輯紀錄
+    stats.js          統計
+    budget.js         預算
+    more.js           更多：分類管理、固定收支、備份與還原
+  store.js            資料結構、預設資料、版本轉換、讀寫
+  ledger.js           記帳的計算：月統計、預算比對、固定收支、分類刪除
+  calc.js             預算的計算（% ⇄ 金額、加總、格式）
+  calculator.js       計算機的邏輯
+  backup.js           備份匯出／匯入
+  dates.js            日期工具
+  drag.js             拖曳排序
+  version.js          App 版本號
+tests/                單元測試（npm test）
+scripts/dev_server.py 本機開發伺服器（npm start）
 docs/
-  SPEC.md          規格書（目前版本）
-  SPEC-v2-draft.md 規格書 v2.0 草稿（記帳功能，確認後併入 SPEC.md）
-  DECISIONS.md     決策紀錄：選了什麼、為什麼
+  SPEC.md             規格書（第一部分預算、第二部分記帳 B1～B15）
+  DECISIONS.md        決策紀錄：選了什麼、為什麼
 design/
-  tokens.css       顏色、字型、圓角等設計 tokens（App 共用）
-  visual/          各版本視覺稿
-  references/      風格參考圖（不放進 git，只存在本機）
-  mascot/          水豚 SVG、產生程式 build.py、預覽頁 preview.html
-  icons/           桌面圖示；改了水豚後執行 sh design/icons/render.sh 重新產生 PNG
-wireframes/        各版本 wireframe（用瀏覽器打開 .html）
-.claude/launch.json 本機預覽伺服器設定
+  tokens.css          顏色、字型、圓角等設計 tokens（App 共用）
+  visual/             各版本視覺稿（v1 預算、v2 記帳）
+  references/         風格參考圖（不放進 git，只存在本機）
+  mascot/             水豚 SVG、產生程式 build.py、預覽頁 preview.html
+  icons/              桌面圖示；改了水豚後執行 sh design/icons/render.sh 重新產生 PNG
+wireframes/           各版本 wireframe（用瀏覽器打開 .html）
 ```
 
 ## 迭代流程
@@ -81,9 +82,10 @@ wireframes/        各版本 wireframe（用瀏覽器打開 .html）
 2. **記決策**：在 `docs/DECISIONS.md` 新增一筆，寫下原因。
 3. **寫程式＋測試**：修改 `src/`，在 `tests/` 補上測試，跑 `npm test`。
 4. **記變更**：在 `CHANGELOG.md` 的「未發布」區塊寫下改了什麼。
-5. **發布**：更新版本號（`package.json`、`src/version.js`、`sw.js` 的 `VERSION`、CHANGELOG），跑 `npm test` 確認一致，git commit 後打 tag（例如 `v1.2.0`）。
+5. **大改版用分支**：在 `feature/...` 分支開發，完成並測試後才合併到 main（main 一推就上線）。
+6. **發布**：更新版本號（`package.json`、`src/version.js`、`sw.js` 的 `VERSION`、CHANGELOG），跑 `npm test` 確認一致，git commit 後打 tag（例如 `v1.2.0`）。
    - 有新增檔案的話，也要加進 `sw.js` 的 `FILES` 清單，離線時才打得開。
-6. **上線**：`git push && git push --tags`。GitHub Pages 會自動用 `main` 分支更新網站，約 1 分鐘後生效；手機上的 App 會在下次打開時於背景下載新版，再下一次打開就是新版。
+7. **上線**：`git push && git push --tags`。GitHub Pages 會自動用 `main` 分支更新網站，約 1 分鐘後生效；手機上的 App 會在下次打開時於背景下載新版，再下一次打開就是新版。
 
 ### 改資料結構時
 

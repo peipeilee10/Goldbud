@@ -1,4 +1,4 @@
-// 資料建立、讀寫與版本轉換。資料結構見 docs/SPEC.md 第 11 節（schemaVersion 2）。
+// 資料建立、讀寫與版本轉換。資料結構見 docs/SPEC.md B11（schemaVersion 2）。
 
 export const STORAGE_KEY = "goldbud";
 // App 改名前用過的 key：新 key 沒有資料時，從這裡搬過來
@@ -163,7 +163,7 @@ export function newRecurring({ type = "expense", name, amount = null, categoryId
  * 2. 在 MIGRATIONS 加上「舊版號 → 轉換函式」
  */
 const MIGRATIONS = {
-  // v1 → v2：方案的項目名稱變成共用分類（SPEC 11.1）
+  // v1 → v2：方案的項目名稱變成共用分類（SPEC B11.1）
   1: (d) => {
     const categories = [];
     const incomeCategories = [];

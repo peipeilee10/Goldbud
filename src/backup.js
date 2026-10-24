@@ -1,4 +1,4 @@
-// 備份匯出／匯入（SPEC 第 10 節）
+// 備份匯出／匯入（SPEC B10）
 
 import { parseData } from "./store.js";
 import { todayStr } from "./dates.js";

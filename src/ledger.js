@@ -1,4 +1,4 @@
-// 記帳的計算（SPEC 第 5～9 節）：不碰 DOM、不碰儲存，方便測試。
+// 記帳的計算（SPEC B5～B9）：不碰 DOM、不碰儲存，方便測試。
 
 import { incomeTotal, expenseView } from "./calc.js";
 import { monthKey, daysInMonth, dayInMonth, monthsBetween, todayStr } from "./dates.js";
@@ -67,7 +67,7 @@ export function ensureMonth(data, key) {
 }
 
 /**
- * 月份結束後鎖定：把當時的方案存成快照（SPEC 6.1）。
+ * 月份結束後鎖定：把當時的方案存成快照（SPEC B6.1）。
  * 有紀錄但還沒有月份資料的過去月份，也一起補上並鎖定。回傳這次鎖定的月份。
  */
 export function lockPastMonths(data, today = todayStr()) {
@@ -91,7 +91,7 @@ export function setMonthPlan(data, key, planId) {
   if (m.locked) m.snapshot = structuredClone(data.plans.find((p) => p.id === planId));
 }
 
-/** 方案的預算金額：用方案自己的預算收入計算（SPEC 6.2） */
+/** 方案的預算金額：用方案自己的預算收入計算（SPEC B6.2） */
 export function planBudget(plan, categories) {
   const income = incomeTotal(plan);
   const byCategory = new Map();
@@ -132,7 +132,7 @@ export function status(actual, budget, ratio, fixed = 0) {
 }
 
 /**
- * 某月的預算比對（SPEC 第 7 節）。
+ * 某月的預算比對（SPEC B7）。
  * rows：方案裡的支出類分類；outside：方案沒有、但有支出的分類。
  */
 export function compareMonth(data, key, today = todayStr()) {
@@ -203,7 +203,7 @@ export function compareMonth(data, key, today = todayStr()) {
   };
 }
 
-/** 調整建議（SPEC 7.4）：只產生文字，不修改方案 */
+/** 調整建議（SPEC B7.4）：只產生文字，不修改方案 */
 export function suggestions(cmp) {
   const tips = [];
   const current = cmp.ratio != null;
@@ -272,7 +272,7 @@ export function subcategorySlices(data, key, categoryId) {
 // ---------- 固定收支 ----------
 
 /**
- * 打開 App 時檢查固定收支（SPEC 9.2）：
+ * 打開 App 時檢查固定收支（SPEC B9.2）：
  * - 自動記入：產生紀錄（直接加進 data.entries），回傳在 added
  * - 提醒確認：回傳在 pending（不儲存，每次都重新算）
  */
@@ -328,7 +328,7 @@ export function categoryUsage(data, categoryId) {
   };
 }
 
-/** 刪除大分類（或收入分類），用到它的地方搬到 targetId（SPEC 3.3） */
+/** 刪除大分類（或收入分類），用到它的地方搬到 targetId（SPEC B3.3） */
 export function deleteCategory(data, categoryId, targetId) {
   const isIncome = data.incomeCategories.some((c) => c.id === categoryId);
   for (const e of data.entries) {

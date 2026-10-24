@@ -18,53 +18,70 @@
 </head>
 <body>
 <div class="app">
-  <main class="content">
-    <header class="appbar">
-      <img src="design/mascot/capybara-calm.svg" alt="">
-      <h1>小金芽</h1>
-      <button class="btn" id="app-menu" aria-label="更多選項">⋯</button>
-    </header>
+  <!-- 記帳（預設首頁） -->
+  <section class="page" id="page-ledger" data-page="ledger" hidden></section>
 
-    <nav class="plans" id="plans" aria-label="方案"></nav>
+  <!-- 統計 -->
+  <section class="page" id="page-stats" data-page="stats" hidden></section>
 
-    <section class="card income" aria-labelledby="income-title">
-      <div class="card-head">
-        <span class="dot" aria-hidden="true">💰</span>
-        <h2 id="income-title">收入</h2>
-        <span class="right" id="income-count"></span>
-      </div>
-      <div class="card-body">
-        <div id="income-list"></div>
-        <button class="add" id="add-income">＋ 新增收入</button>
-        <div class="total"><span>收入總計</span><span class="num" id="income-total"></span></div>
-      </div>
-    </section>
+  <!-- 預算 -->
+  <section class="page" id="page-budget" data-page="budget" hidden>
+    <main class="content">
+      <header class="page-title"><h1>預算</h1></header>
 
-    <section class="card expense" aria-labelledby="expense-title">
-      <div class="card-head">
-        <span class="dot" aria-hidden="true">🧺</span>
-        <h2 id="expense-title">支出分配</h2>
-        <span class="right" id="expense-head"></span>
-      </div>
-      <div class="card-body">
-        <div id="expense-list"></div>
-        <button class="add" id="add-expense">＋ 新增支出</button>
-        <div class="total"><span>已分配</span><span class="num" id="allocated"></span></div>
-        <div class="sub"><span id="unallocated-label">未分配</span><span class="num" id="unallocated"></span></div>
-      </div>
-    </section>
-  </main>
+      <nav class="plans" id="plans" aria-label="方案"></nav>
+      <div id="month-plan"></div>
 
-  <footer class="summary" id="summary" aria-live="polite">
-    <img class="mascot" id="mascot" src="design/mascot/capybara-calm.svg" alt="">
-    <span class="bubble" id="bubble"></span>
-    <div class="meter" aria-hidden="true"><i id="meter-fill"></i><i class="over" id="meter-over"></i></div>
-    <div class="stats">
-      <div>收入<b id="stat-total"></b></div>
-      <div>已分配<b id="stat-allocated"></b></div>
-      <div>剩餘<b id="stat-remaining"></b></div>
-    </div>
-  </footer>
+      <section class="card income" aria-labelledby="income-title">
+        <div class="card-head">
+          <span class="dot" aria-hidden="true">💰</span>
+          <h2 id="income-title">收入</h2>
+          <span class="right" id="income-count"></span>
+        </div>
+        <div class="card-body">
+          <div id="income-list"></div>
+          <button class="add" id="add-income">＋ 新增收入</button>
+          <div class="total"><span>收入總計</span><span class="num" id="income-total"></span></div>
+        </div>
+      </section>
+
+      <section class="card expense" aria-labelledby="expense-title">
+        <div class="card-head">
+          <span class="dot" aria-hidden="true">🧺</span>
+          <h2 id="expense-title">支出分配</h2>
+          <span class="right" id="expense-head"></span>
+        </div>
+        <div class="card-body">
+          <div id="expense-list"></div>
+          <button class="add" id="add-expense">＋ 新增支出</button>
+          <div class="total"><span>已分配</span><span class="num" id="allocated"></span></div>
+          <div class="sub"><span id="unallocated-label">未分配</span><span class="num" id="unallocated"></span></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="summary" id="summary" aria-live="polite">
+      <img class="mascot" id="mascot" src="design/mascot/capybara-calm.svg" alt="">
+      <span class="bubble" id="bubble"></span>
+      <div class="meter" aria-hidden="true"><i id="meter-fill"></i><i class="over" id="meter-over"></i></div>
+      <div class="stats">
+        <div>收入<b id="stat-total"></b></div>
+        <div>已分配<b id="stat-allocated"></b></div>
+        <div>剩餘<b id="stat-remaining"></b></div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- 更多 -->
+  <section class="page" id="page-more" data-page="more" hidden></section>
+
+  <nav class="tabbar" aria-label="主選單">
+    <a class="tab" href="#/ledger" data-tab="ledger"><span class="ic" aria-hidden="true">📒</span>記帳</a>
+    <a class="tab" href="#/stats" data-tab="stats"><span class="ic" aria-hidden="true">📊</span>統計</a>
+    <button class="tab-plus" id="tab-add" aria-label="記一筆"><span>＋</span></button>
+    <a class="tab" href="#/budget" data-tab="budget"><span class="ic" aria-hidden="true">🎯</span>預算</a>
+    <a class="tab" href="#/more" data-tab="more"><span class="ic" aria-hidden="true">⋯</span>更多</a>
+  </nav>
 </div>
 
 <noscript>這個工具需要開啟 JavaScript 才能使用。</noscript>

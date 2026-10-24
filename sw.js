@@ -2,7 +2,7 @@
 // 每次發布新版都要更新 VERSION（tests/version.test.js 會檢查和 src/version.js 一致），
 // 手機才會下載新檔案。
 
-const VERSION = "1.3.1";
+const VERSION = "2.0.0";
 const CACHE = `goldbud-${VERSION}`;
 // 舊名稱時期的快取也一起清掉
 const OLD_PREFIXES = ["goldbud-", "budget-capybara-"];
@@ -18,11 +18,23 @@ const FILES = [
   "src/drag.js",
   "src/store.js",
   "src/version.js",
+  "src/dates.js",
+  "src/ledger.js",
+  "src/backup.js",
+  "src/state.js",
+  "src/ui.js",
+  "src/pickers.js",
+  "src/pages/budget.js",
+  "src/pages/ledger.js",
+  "src/pages/entry.js",
+  "src/pages/stats.js",
+  "src/pages/more.js",
   "design/tokens.css",
   "design/mascot/capybara-sleep.svg",
   "design/mascot/capybara-calm.svg",
   "design/mascot/capybara-done.svg",
   "design/mascot/capybara-sweat.svg",
+  "design/mascot/capybara-panic.svg",
   "design/icons/icon-192.png",
   "design/icons/apple-touch-icon.png",
 ];
