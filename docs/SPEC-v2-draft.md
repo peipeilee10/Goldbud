@@ -3,7 +3,7 @@
 | 項目 | 內容 |
 |---|---|
 | 規格版本 | **v2.0 草稿** |
-| 狀態 | 功能與 wireframe 已確認；下一步視覺設計，開發時併入 `SPEC.md` |
+| 狀態 | 功能、wireframe、視覺設計 v2 已完成；開發時併入 `SPEC.md` |
 | 最後更新 | 2026-10-24 |
 | 目前版本 | 預算功能見 [SPEC.md](SPEC.md)（v1.6） |
 
@@ -192,6 +192,7 @@ type Category = {
   name: string;
   emoji: string;
   kind: "expense" | "saving";
+  color: number | null;       // 圓餅圖顏色 1–7（--cat-N）；null 表示併入「其他」
   subcategories: { id: string; name: string }[];
 };
 
@@ -275,7 +276,13 @@ type MonthBudget = {
 4. 調整建議第一版只顯示、不自動修改方案（7.4）。
 5. 每月提醒備份（第 10 節）。
 
-## 15. UI（wireframe 已確認，見 `wireframes/v2.html`）
+## 15. UI（wireframe：`wireframes/v2.html`；視覺稿：`design/visual/v2.html`）
+
+視覺規則：
+- 分類顏色：新增支出類大分類時，自動分配下一個還沒用過的顏色（`--cat-1`～`--cat-7`）；7 個都用完後，新的分類在圓餅圖併入「其他」。可以在分類管理更換顏色（D-043）。
+- 狀態一定同時有水豚表情、文字標籤和顏色：正常（平靜）、⚡ 花太快（冒汗，`--fast`）、⚠ 超支（慌張，`--over`）、✓ 達標（泡溫泉）（D-044、D-045）。
+- 記一筆面板在較矮的手機上可以捲動，「儲存」按鈕固定在面板最下方。
+
 
 已確定：
 - 打開 App 預設顯示「記帳」頁（D-037）。

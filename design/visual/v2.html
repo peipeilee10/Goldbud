@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>視覺設計 v2 — 小金芽記帳</title>
+<link rel="stylesheet" href="../tokens.css">
+<!-- 直接沿用 App 的元件樣式（按鈕、卡片、欄位、進度條、計算機鍵…），以下只補 v2 的新元件 -->
+<link rel="stylesheet" href="../../src/app.css">
+<style>
+  /* ---------- 文件版面 ---------- */
+  body { background: #EFE2D2; padding: 24px 16px 64px; }
+  .doc, .toc, .board, h2.group { max-width: 1240px; margin-left: auto; margin-right: auto; }
+  .doc h1 { margin: 0 0 4px; font-size: 22px; }
+  .doc p { margin: 0; color: var(--ink-soft); }
+  .toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px auto 8px; }
+  .toc a { font-size: 12px; font-weight: 700; color: var(--ink); text-decoration: none; background: var(--surface); border: 2px solid var(--outline); border-radius: 999px; padding: 2px 10px; }
+  h2.group { font-size: 17px; margin-top: 36px; margin-bottom: 16px; padding-bottom: 6px; border-bottom: 2.5px solid var(--outline); }
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 40px 32px; align-items: start; }
+  .label { font-weight: 700; margin: 0 0 10px; }
+  .label span { color: var(--ink-soft); font-weight: 400; }
+  .cap { font-size: 12px; color: var(--ink-soft); margin: 10px 4px 0; }
+
+  .phone {
+    width: 100%; max-width: 375px;
+    background: var(--bg); border-radius: 36px;
+    box-shadow: 0 0 0 8px #3b2b1f, 0 18px 40px #3b2b1f40;
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+  }
+  .phone .content { padding: 16px 16px 20px; flex: 1; }
+  .phone .sheet { animation: none; }
+
+  /* ================= v2 新元件（開發時搬進 src/app.css） ================= */
+
+  /* 底部分頁列 */
+  .tabbar {
+    display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
+    background: var(--surface); border-top: var(--border);
+    padding: 6px 6px 14px; position: relative; z-index: 6;
+  }
+  .tab {
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    font-size: 11px; font-weight: 700; color: var(--ink-soft); background: none; border: 0;
+  }
+  .tab .ic { width: 40px; height: 28px; display: grid; place-items: center; font-size: 19px; border-radius: 999px; }
+  .tab.on { color: var(--ink); }
+  .tab.on .ic { background: var(--yuzu-soft); box-shadow: inset 0 0 0 2px var(--outline); }
+  .tab-plus { display: grid; place-items: center; background: none; border: 0; padding: 0; }
+  .tab-plus span {
+    width: 60px; height: 60px; margin-top: -30px; border-radius: 50%;
+    display: grid; place-items: center; font: 900 32px var(--font-num); color: var(--ink);
+    background: var(--yuzu); border: var(--border); box-shadow: 0 5px 0 var(--outline);
+  }
+
+  /* 月份切換 */
+  .month-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2px 0 14px; }
+  .month-nav b { font-size: 17px; min-width: 130px; text-align: center; }
+  .month-nav .arrow { width: 36px; height: 36px; min-width: 0; padding: 0; border-radius: 12px; font-size: 16px; }
+
+  .page-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .page-title h1 { font-size: 20px; }
+
+  /* 本月總覽卡 */
+  .overview { background: var(--surface); border: var(--border); border-radius: var(--r-card); box-shadow: 0 5px 0 var(--outline); padding: 12px 14px 12px; margin-bottom: 16px; }
+  .overview-top { display: flex; align-items: center; gap: 10px; }
+  .overview-top img { width: 62px; height: 62px; margin: -6px -4px -6px -6px; }
+  .ov-stats { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .ov-stats div { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+  .ov-stats b { display: block; font: 900 17px var(--font-num); color: var(--ink); }
+  .ov-stats .in b { color: var(--income-ink); }
+  .budget-meter { position: relative; margin: 22px 0 6px; }
+  .budget-meter .meter { margin: 0; }
+  .today-line { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; background: var(--outline); border-radius: 2px; }
+  .today-line::before {
+    content: "今天"; position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%);
+    font-size: 10px; font-weight: 800; color: #fff; background: var(--outline); padding: 0 6px; border-radius: 999px; white-space: nowrap;
+  }
+  .meter i.fast {
+    background-color: var(--fast);
+    background-image: repeating-linear-gradient(-45deg, #ffffff40 0 5px, transparent 5px 10px);
+  }
+  .meter-note { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+
+  /* 提示橫幅 */
+  .banner {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    background: var(--yuzu-soft); border: 2px solid var(--outline); border-radius: 14px;
+    padding: 9px 12px; margin-bottom: 14px; font-weight: 800; font-size: 14px; text-align: left;
+  }
+  .banner .go { margin-left: auto; }
+  .banner.soft { background: var(--surface); border-style: dashed; }
+
+  /* 明細 */
+  .day { margin-bottom: 14px; }
+  .day-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 6px; font-weight: 800; font-size: 13px; }
+  .day-head span:last-child { font: 800 13px var(--font-num); color: var(--ink-soft); }
+  .day-list { background: var(--surface); border: 2px solid var(--outline); border-radius: 18px; overflow: hidden; }
+  .entry { display: flex; align-items: center; gap: 10px; padding: 9px 12px; width: 100%; background: none; border: 0; text-align: left; }
+  .entry + .entry { border-top: 2px dashed var(--hairline); }
+  .entry .tile { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-size: 19px; border: 2px solid var(--outline); flex: none; }
+  .entry .txt { flex: 1; min-width: 0; }
+  .entry .txt b { display: flex; align-items: center; gap: 4px; font-size: 15px; }
+  .entry .txt small { display: block; font-size: 12px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry .amt { font: 900 16px var(--font-num); }
+  .entry .amt.in { color: var(--income-ink); }
+  .entry.flash { background: var(--yuzu-soft); }
+  .tag { font-size: 10px; font-weight: 800; padding: 0 6px; border-radius: 999px; background: var(--bg); border: 1.5px solid var(--hairline); color: var(--ink-soft); }
+
+  /* 狀態標籤：一定帶圖示＋文字 */
+  .badge { display: inline-flex; align-items: center; gap: 2px; font-size: 11px; font-weight: 800; padding: 0 7px; border-radius: 999px; border: 1.5px solid currentColor; white-space: nowrap; }
+  .badge.fast { color: var(--fast-ink); background: var(--fast-soft); }
+  .badge.over { color: var(--over-ink); background: var(--over-soft); }
+  .badge.out { color: var(--ink-soft); background: var(--bg); }
+  .badge.ok { color: var(--income-ink); background: var(--income-soft); }
+
+  /* 分段切換 */
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--bg); border: 2px solid var(--outline); border-radius: 14px; padding: 3px; gap: 3px; }
+  .seg button { border: 0; background: none; border-radius: 10px; padding: 6px 10px; font-weight: 800; font-size: 14px; color: var(--ink-soft); }
+  .seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 2px var(--outline), 0 3px 0 var(--outline); }
+  .seg.expense button.on { background: var(--expense-soft); }
+  .seg.income button.on { background: var(--income-soft); }
+
+  /* 記一筆面板 */
+  .sheet.add-sheet { padding-top: 8px; }
+  .add-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .add-top .seg { width: 150px; }
+  .add-top .close { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--bg); color: var(--ink-soft); font-weight: 900; }
+  .amount-display { background: #fff; border: 2px solid var(--hairline); border-radius: var(--r-field); padding: 4px 12px; text-align: right; margin-bottom: 10px; }
+  .amount-display small { display: block; min-height: 18px; font: 700 13px var(--font-num); color: var(--ink-soft); }
+  .amount-display b { font: 900 30px var(--font-num); }
+  .amount-display b span { font-size: 15px; color: var(--ink-soft); margin-right: 4px; }
+  .mini-label { font-size: 12px; font-weight: 800; color: var(--ink-soft); margin: 0 2px 5px; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 10px; padding: 0 16px 4px; }
+  .chip { flex: none; border: 2px solid var(--hairline); background: var(--surface); border-radius: 999px; padding: 4px 11px; font-weight: 700; font-size: 13px; }
+  .chip.on { border-color: var(--outline); background: var(--expense-soft); box-shadow: 0 2px 0 var(--outline); }
+  .chip.add-new { border-style: dashed; color: var(--ink-soft); }
+  .cats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-bottom: 8px; }
+  .cat { border: 2px solid var(--hairline); background: #fff; border-radius: 14px; padding: 5px 0 3px; font-size: 11px; font-weight: 800; color: var(--ink-soft); }
+  .cat i { display: block; font-style: normal; font-size: 21px; line-height: 1.2; }
+  .cat.on { border: var(--border); background: var(--expense-soft); color: var(--ink); box-shadow: 0 3px 0 var(--outline); }
+  .subs { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 10px; background: var(--expense-soft); border-radius: 14px; margin-bottom: 10px; }
+  .subs .chip.on { background: #fff; }
+  .meta { display: grid; grid-template-columns: auto 1fr; gap: 8px; margin-bottom: 10px; }
+  .meta .field { height: 40px; font-size: 14px; font-weight: 700; }
+  .meta .ph { color: var(--ink-soft); font-weight: 600; }
+  .keypad { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 44px; gap: 7px; margin-bottom: 10px; }
+  .keypad .calc-key { font-size: 19px; }
+
+  /* 提示（toast） */
+  .toast {
+    position: absolute; left: 50%; bottom: 104px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 10px; white-space: nowrap;
+    background: var(--ink); color: #fff; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: 13px;
+    box-shadow: 0 6px 16px #3b2b1f55; z-index: 8;
+  }
+  .toast u { color: var(--yuzu-soft); text-decoration: none; border-bottom: 2px solid; }
+
+  /* 待確認卡片 */
+  .confirm-card { background: #fff; border: 2px solid var(--outline); border-radius: 18px; padding: 12px; margin-bottom: 12px; }
+  .confirm-card .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .confirm-card .head b { font-size: 16px; }
+  .confirm-card .head small { margin-left: auto; color: var(--ink-soft); font-weight: 700; font-size: 12px; }
+  .confirm-card .field { margin-bottom: 10px; justify-content: flex-end; }
+
+  /* 統計 */
+  .plan-pick { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 42px; padding: 0 12px; background: var(--surface); border: 2px solid var(--outline); border-radius: 14px; font-weight: 800; margin-bottom: 14px; }
+  .plan-pick small { color: var(--ink-soft); font-weight: 700; }
+  .verdict { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .verdict img { width: 66px; height: 66px; flex: none; }
+  .verdict .bubble { font-size: 14px; padding: 6px 12px; white-space: normal; }
+  .prog-card { background: var(--surface); border: var(--border); border-radius: var(--r-card); box-shadow: 0 5px 0 var(--outline); padding: 4px 14px; margin: 12px 0 18px; }
+  .prog { padding: 12px 0; }
+  .prog + .prog { border-top: 2px dashed var(--hairline); }
+  .prog-top { display: flex; align-items: center; gap: 6px; }
+  .prog-top b { font-size: 15px; }
+  .prog-top .num { margin-left: auto; font: 800 14px var(--font-num); white-space: nowrap; }
+  .prog-top .num span { color: var(--ink-soft); }
+  .prog .budget-meter { margin: 8px 0 4px; }
+  .prog .meter { height: 14px; }
+  .prog .today-line::before { display: none; }
+  .prog-cap { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+  .prog-subs { margin: 8px 0 0 28px; padding: 6px 10px; background: var(--bg); border-radius: 12px; font-size: 13px; }
+  .prog-subs div { display: flex; justify-content: space-between; padding: 2px 0; }
+  .prog-subs div span:last-child { font: 700 13px var(--font-num); }
+  .info-card { background: var(--surface); border: 2px solid var(--outline); border-radius: 18px; padding: 12px 14px; margin-bottom: 12px; }
+  .info-card h3 { font-size: 15px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .kv { display: flex; justify-content: space-between; font-size: 14px; padding: 2px 0; }
+  .kv b { font: 900 15px var(--font-num); }
+  .kv b.good { color: var(--income-ink); }
+  .tip-list { margin: 0; padding-left: 18px; font-size: 14px; }
+  .tip-list li + li { margin-top: 4px; }
+
+  /* 甜甜圈 */
+  .donut-box { display: grid; place-items: center; margin: 6px 0 12px; position: relative; }
+  .donut-box svg { width: 220px; height: 220px; }
+  .donut-center { position: absolute; text-align: center; font-size: 12px; font-weight: 800; color: var(--ink-soft); }
+  .donut-center b { display: block; font: 900 22px var(--font-num); color: var(--ink); }
+  .legend { background: var(--surface); border: 2px solid var(--outline); border-radius: 18px; overflow: hidden; }
+  .legend button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 12px; background: none; border: 0; font-size: 14px; font-weight: 700; text-align: left; }
+  .legend button + button { border-top: 2px dashed var(--hairline); }
+  .legend i { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  .legend .v { margin-left: auto; font: 800 14px var(--font-num); }
+  .legend .p { width: 42px; text-align: right; color: var(--ink-soft); font: 700 12px var(--font-num); }
+
+  /* 更多 */
+  .group-label { font-size: 12px; font-weight: 800; color: var(--ink-soft); margin: 14px 4px 6px; }
+  .menu-list { background: var(--surface); border: var(--border); border-radius: var(--r-card); box-shadow: 0 5px 0 var(--outline); overflow: hidden; margin-bottom: 8px; }
+  .menu-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 14px; background: none; border: 0; text-align: left; font-size: 15px; font-weight: 800; }
+  .menu-row + .menu-row { border-top: 2px dashed var(--hairline); }
+  .menu-row .ic { width: 34px; height: 34px; border-radius: 11px; border: 2px solid var(--outline); display: grid; place-items: center; font-size: 17px; background: var(--bg); flex: none; }
+  .menu-row small { display: block; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+  .menu-row .go { margin-left: auto; color: var(--ink-soft); }
+  .menu-row.danger { color: var(--over-ink); }
+  .menu-row.danger .ic { background: var(--over-soft); }
+  .menu-row .handle { margin-right: -4px; }
+  .kind { font-size: 11px; font-weight: 800; padding: 0 7px; border-radius: 999px; margin-left: auto; }
+  .kind.exp { background: var(--expense-soft); color: var(--expense-ink); }
+  .kind.sav { background: var(--income-soft); color: var(--income-ink); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+
+  .backbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .backbar button { height: 36px; min-width: 0; padding: 0 10px; font-size: 14px; }
+  .backbar h1 { font-size: 18px; }
+
+  /* 規範板 */
+  .spec { background: var(--surface); border: var(--border); border-radius: var(--r-card); box-shadow: 0 5px 0 var(--outline); padding: 16px; }
+  .spec h3 { margin: 0 0 10px; font-size: 15px; }
+  .spec h3 + * { margin-bottom: 18px; }
+  .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .sw { font-size: 11px; font-weight: 700; }
+  .sw i { display: block; height: 34px; border-radius: 10px; border: 2px solid var(--outline); margin-bottom: 4px; }
+  .sw code { display: block; color: var(--ink-soft); font-weight: 400; font-size: 10px; }
+  .mascots { display: flex; gap: 8px; }
+  .mascots figure { margin: 0; text-align: center; font-size: 11px; font-weight: 700; }
+  .mascots img { width: 70px; height: 70px; }
+</style>
+</head>
+<body>
+
+<header class="doc">
+  <h1>小金芽 — 視覺設計 v2：實際收支記帳</h1>
+  <p>對應 wireframe v2 與 SPEC-v2-draft · 沿用 design/tokens.css 與 src/app.css 的元件 · 2026-10-24</p>
+</header>
+
+<nav class="toc">
+  <a href="#ledger">A 記帳首頁</a><a href="#add">B 記一筆</a><a href="#edit">C 待確認</a><a href="#stats">D 統計</a><a href="#more">E 更多</a><a href="#budget">F 預算頁</a><a href="#spec">G 設計規範</a>
+</nav>
+
+<!-- ======================= A ======================= -->
+<h2 class="group" id="ledger">A. 記帳首頁</h2>
+<div class="board">
+  <section>
+    <p class="label">A1. 本月明細 <span>· 10 月 24 日</span></p>
+    <div class="phone">
+      <div class="content">
+        <div class="page-title"><h1>記帳</h1><button class="btn" aria-label="搜尋">🔍</button></div>
+        <div class="month-nav"><button class="btn arrow">‹</button><b>2026 年 10 月</b><button class="btn arrow">›</button></div>
+
+        <div class="overview">
+          <div class="overview-top">
+            <img src="../mascot/capybara-calm.svg" alt="">
+            <div class="ov-stats">
+              <div class="in">收入<b>47,400</b></div>
+              <div>支出<b>28,350</b></div>
+              <div>結餘<b>19,050</b></div>
+            </div>
+          </div>
+          <div class="budget-meter">
+            <div class="meter"><i style="width:68%"></i></div>
+            <span class="today-line" style="left:77%"></span>
+          </div>
+          <div class="meter-note"><span>支出預算 41,440</span><span>已用 68%</span></div>
+        </div>
+
+        <button class="banner">⏰ 2 筆固定支出待確認<span class="go">›</span></button>
+
+        <div class="day">
+          <div class="day-head"><span>10/24（五）</span><span>−220</span></div>
+          <div class="day-list">
+            <button class="entry"><span class="tile" style="background:var(--expense-soft)">🍙</span><span class="txt"><b>吃飯</b><small>午餐便當</small></span><span class="amt">−120</span></button>
+            <button class="entry"><span class="tile" style="background:var(--expense-soft)">🍙</span><span class="txt"><b>飲料</b><small>珍奶</small></span><span class="amt">−65</span></button>
+            <button class="entry"><span class="tile" style="background:var(--expense-soft)">🚌</span><span class="txt"><b>捷運</b><small>交通</small></span><span class="amt">−35</span></button>
+          </div>
+        </div>
+        <div class="day">
+          <div class="day-head"><span>10/05（日）</span><span>+47,400 · −13,000</span></div>
+          <div class="day-list">
+            <button class="entry"><span class="tile" style="background:var(--income-soft)">💰</span><span class="txt"><b>薪水 <span class="tag">🔁 固定</span></b><small>&nbsp;</small></span><span class="amt in">+47,400</span></button>
+            <button class="entry"><span class="tile" style="background:var(--expense-soft)">🏠</span><span class="txt"><b>房租 <span class="tag">🔁 固定</span></b><small>居住</small></span><span class="amt">−13,000</span></button>
+          </div>
+        </div>
+      </div>
+      <nav class="tabbar">
+        <button class="tab on"><span class="ic">📒</span>記帳</button>
+        <button class="tab"><span class="ic">📊</span>統計</button>
+        <button class="tab-plus" aria-label="記一筆"><span>＋</span></button>
+        <button class="tab"><span class="ic">🎯</span>預算</button>
+        <button class="tab"><span class="ic">⋯</span>更多</button>
+      </nav>
+    </div>
+    <p class="cap">每天一張卡片；小字是備註，沒有備註時顯示大分類。收入是薄荷綠、前面加「+」。中間的柚子橘「＋」凸出分頁列，和預算頁的按鈕一樣有厚底。</p>
+  </section>
+
+  <section>
+    <p class="label">A2. 總覽卡的狀態</p>
+    <div class="overview">
+      <div class="overview-top"><img src="../mascot/capybara-calm.svg" alt=""><span class="bubble">花錢速度剛好</span></div>
+      <div class="budget-meter"><div class="meter"><i style="width:60%"></i></div><span class="today-line" style="left:77%"></span></div>
+      <div class="meter-note"><span>正常</span><span>已用 60%</span></div>
+    </div>
+    <div class="overview">
+      <div class="overview-top"><img src="../mascot/capybara-sweat.svg" alt=""><span class="bubble">花得有點快喔 <span class="badge fast">⚡ 花太快</span></span></div>
+      <div class="budget-meter"><div class="meter"><i class="fast" style="width:93%"></i></div><span class="today-line" style="left:77%"></span></div>
+      <div class="meter-note"><span>比今天的進度多 16%</span><span>已用 93%</span></div>
+    </div>
+    <div class="overview">
+      <div class="overview-top"><img src="../mascot/capybara-panic.svg" alt=""><span class="bubble">超出預算 2,300 <span class="badge over">⚠ 超支</span></span></div>
+      <div class="budget-meter"><div class="meter"><i style="width:94.7%"></i><i class="over" style="width:5.3%;border-left:2px solid var(--outline)"></i></div><span class="today-line" style="left:77%"></span></div>
+      <div class="meter-note"><span>紅色斜紋是超出的部分</span><span>已用 106%</span></div>
+    </div>
+    <div class="overview">
+      <div class="overview-top"><img src="../mascot/capybara-done.svg" alt=""><span class="bubble">9 月全部在預算內！<span class="badge ok">✓ 達標</span></span></div>
+      <div class="budget-meter"><div class="meter"><i style="width:91%"></i></div></div>
+      <div class="meter-note"><span>過去的月份不顯示今天線</span><span>已用 91%</span></div>
+    </div>
+    <p class="cap">狀態一定同時有「水豚表情＋文字標籤＋顏色」，不只靠顏色區分。</p>
+  </section>
+</div>
+
+<!-- ======================= B ======================= -->
+<h2 class="group" id="add">B. 記一筆</h2>
+<div class="board">
+  <section>
+    <p class="label">B1. 記一筆支出</p>
+    <div class="phone">
+      <div style="height:64px;background:#3b2b1f55"></div>
+      <div class="sheet add-sheet" style="margin-top:-24px;position:relative;border-radius:26px 26px 0 0">
+        <div class="grab"></div>
+        <div class="add-top">
+          <div class="seg expense"><button class="on">支出</button><button>收入</button></div>
+          <button class="close" aria-label="關閉">✕</button>
+        </div>
+        <div class="amount-display"><small>100 + 20</small><b><span>NT$</span>120</b></div>
+
+        <div class="mini-label">最近常用</div>
+        <div class="chips"><button class="chip on">🍙 吃飯</button><button class="chip">🍙 飲料</button><button class="chip">🚌 捷運</button><button class="chip">🎮 遊戲</button><button class="chip">🍙 日用品</button></div>
+
+        <div class="cats">
+          <button class="cat on"><i>🍙</i>生活費</button><button class="cat"><i>🏠</i>居住</button><button class="cat"><i>🚌</i>交通</button><button class="cat"><i>🎮</i>娛樂</button><button class="cat"><i>⋯</i>更多</button>
+        </div>
+        <div class="subs"><button class="chip on">吃飯</button><button class="chip">飲料</button><button class="chip">日用品</button><button class="chip add-new">＋</button></div>
+
+        <div class="meta"><span class="field">📅 今天</span><span class="field"><span class="ph">✏️ 備註</span></span></div>
+
+        <div class="keypad">
+          <button class="calc-key num">7</button><button class="calc-key num">8</button><button class="calc-key num">9</button><button class="calc-key op">÷</button>
+          <button class="calc-key num">4</button><button class="calc-key num">5</button><button class="calc-key num">6</button><button class="calc-key op">×</button>
+          <button class="calc-key num">1</button><button class="calc-key num">2</button><button class="calc-key num">3</button><button class="calc-key op">−</button>
+          <button class="calc-key num">0</button><button class="calc-key num">.</button><button class="calc-key fn">⌫</button><button class="calc-key op">+</button>
+        </div>
+        <button class="btn primary calc-submit">儲存</button>
+      </div>
+    </div>
+    <p class="cap">選中的分類是蜜桃橘底＋粗框＋厚底，和預算頁的 emoji 按鈕一致；小分類放在淡蜜桃色的區塊裡，看得出屬於上面的大分類。</p>
+  </section>
+
+  <section>
+    <p class="label">B3. 記一筆收入</p>
+    <div class="phone">
+      <div style="height:64px;background:#3b2b1f55"></div>
+      <div class="sheet add-sheet" style="margin-top:-24px;position:relative;border-radius:26px 26px 0 0">
+        <div class="grab"></div>
+        <div class="add-top">
+          <div class="seg income"><button>支出</button><button class="on">收入</button></div>
+          <button class="close" aria-label="關閉">✕</button>
+        </div>
+        <div class="amount-display" style="border-color:var(--income)"><small>&nbsp;</small><b style="color:var(--income-ink)"><span>NT$</span>3,000</b></div>
+        <div class="mini-label">收入分類</div>
+        <div class="chips" style="flex-wrap:wrap"><button class="chip">💰 薪水</button><button class="chip on" style="background:var(--income-soft)">💼 兼職</button><button class="chip">📈 股息</button><button class="chip add-new">＋ 新增</button></div>
+        <div class="meta"><span class="field">📅 10/20</span><span class="field">✏️ 家教</span></div>
+        <div class="keypad">
+          <button class="calc-key num">7</button><button class="calc-key num">8</button><button class="calc-key num">9</button><button class="calc-key op">÷</button>
+          <button class="calc-key num">4</button><button class="calc-key num">5</button><button class="calc-key num">6</button><button class="calc-key op">×</button>
+          <button class="calc-key num">1</button><button class="calc-key num">2</button><button class="calc-key num">3</button><button class="calc-key op">−</button>
+          <button class="calc-key num">0</button><button class="calc-key num">.</button><button class="calc-key fn">⌫</button><button class="calc-key op">+</button>
+        </div>
+        <button class="btn primary calc-submit">儲存</button>
+      </div>
+    </div>
+    <p class="cap">切到「收入」時，切換鈕和金額變成薄荷綠，避免把收入誤記成支出。</p>
+  </section>
+
+  <section>
+    <p class="label">B5. 儲存後</p>
+    <div class="phone" style="height:460px">
+      <div class="content">
+        <div class="day">
+          <div class="day-head"><span>10/24（五）</span><span>−340</span></div>
+          <div class="day-list">
+            <button class="entry flash"><span class="tile" style="background:var(--expense-soft)">🍙</span><span class="txt"><b>吃飯</b><small>生活費</small></span><span class="amt">−120</span></button>
+            <button class="entry"><span class="tile" style="background:var(--expense-soft)">🍙</span><span class="txt"><b>吃飯</b><small>午餐便當</small></span><span class="amt">−120</span></button>
+            <button class="entry"><span class="tile" style="background:var(--expense-soft)">🍙</span><span class="txt"><b>飲料</b><small>珍奶</small></span><span class="amt">−65</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="toast">✅ 已記錄 −120 <u>再記一筆</u> <u>復原</u></div>
+      <nav class="tabbar">
+        <button class="tab on"><span class="ic">📒</span>記帳</button><button class="tab"><span class="ic">📊</span>統計</button><button class="tab-plus" aria-label="記一筆"><span>＋</span></button><button class="tab"><span class="ic">🎯</span>預算</button><button class="tab"><span class="ic">⋯</span>更多</button>
+      </nav>
+    </div>
+    <p class="cap">新紀錄用柚子色底亮一下再淡出；深色提示條浮在分頁列上方約 4 秒。</p>
+  </section>
+</div>
+
+<!-- ======================= C ======================= -->
+<h2 class="group" id="edit">C. 固定收支待確認</h2>
+<div class="board">
+  <section>
+    <p class="label">C2. 待確認的固定收支</p>
+    <div class="phone">
+      <div style="height:120px;background:#3b2b1f55"></div>
+      <div class="sheet" style="margin-top:-24px;position:relative;border-radius:26px 26px 0 0">
+        <div class="grab"></div>
+        <h3>待確認的固定收支</h3>
+        <div class="confirm-card">
+          <div class="head"><span class="emoji" style="width:36px;height:36px;font-size:18px">💡</span><b>電費</b><small>每月 15 號 · 居住</small></div>
+          <div class="field amount"><span class="unit">NT$</span><span class="money-value placeholder">本月金額</span></div>
+          <div class="sheet-actions"><button class="btn">這個月略過</button><button class="btn primary">記入</button></div>
+        </div>
+        <div class="confirm-card">
+          <div class="head"><span class="emoji" style="width:36px;height:36px;font-size:18px">📱</span><b>手機帳單</b><small>每月 20 號 · 生活費</small></div>
+          <div class="field amount"><span class="unit">NT$</span><span class="money-value">599</span></div>
+          <div class="sheet-actions"><button class="btn">這個月略過</button><button class="btn primary">記入</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ======================= D ======================= -->
+<h2 class="group" id="stats">D. 統計</h2>
+<div class="board">
+  <section>
+    <p class="label">D1. 預算比對</p>
+    <div class="phone">
+      <div class="content">
+        <div class="page-title"><h1>統計</h1></div>
+        <div class="month-nav"><button class="btn arrow">‹</button><b>2026 年 10 月</b><button class="btn arrow">›</button></div>
+        <button class="plan-pick"><span>🎯 預算：我的方案 ▾</span><small>進行中</small></button>
+        <div class="verdict"><img src="../mascot/capybara-sweat.svg" alt=""><span class="bubble">生活費花得有點快，其他都還好</span></div>
+        <div class="seg"><button class="on">預算比對</button><button>圓餅圖</button></div>
+
+        <div class="prog-card">
+          <div class="prog">
+            <div class="prog-top"><b>🍙 生活費</b><span class="badge fast">⚡ 花太快</span><span class="num">12,300 <span>/ 14,220</span></span></div>
+            <div class="budget-meter"><div class="meter"><i class="fast" style="width:87%"></i></div><span class="today-line" style="left:77%"></span></div>
+            <div class="prog-cap"><span>87%</span><span>剩 1,920 ▴</span></div>
+            <div class="prog-subs"><div><span>吃飯</span><span>9,800</span></div><div><span>飲料</span><span>1,900</span></div><div><span>日用品</span><span>600</span></div></div>
+          </div>
+          <div class="prog">
+            <div class="prog-top"><b>🏠 居住</b><span class="num">13,000 <span>/ 13,000</span></span></div>
+            <div class="budget-meter"><div class="meter"><i style="width:100%"></i></div></div>
+            <div class="prog-cap"><span>100%</span><span>剛好用完</span></div>
+          </div>
+          <div class="prog">
+            <div class="prog-top"><b>🚌 交通</b><span class="badge over">⚠ 超支</span><span class="num">2,600 <span>/ 2,000</span></span></div>
+            <div class="budget-meter"><div class="meter"><i style="width:76.9%"></i><i class="over" style="width:23.1%;border-left:2px solid var(--outline)"></i></div></div>
+            <div class="prog-cap"><span>130%</span><span style="color:var(--over-ink)">超出 600</span></div>
+          </div>
+          <div class="prog">
+            <div class="prog-top"><b>🎮 娛樂</b><span class="num">1,200 <span>/ 4,740</span></span></div>
+            <div class="budget-meter"><div class="meter"><i style="width:25%"></i></div><span class="today-line" style="left:77%"></span></div>
+            <div class="prog-cap"><span>25%</span><span>剩 3,540 ▾</span></div>
+          </div>
+          <div class="prog">
+            <div class="prog-top"><b>🎁 禮物</b><span class="badge out">預算外</span><span class="num">850</span></div>
+            <div class="prog-cap"><span>這個方案沒有「禮物」</span></div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>💰 收入</h3>
+          <div class="kv"><span>預算</span><b>47,400</b></div>
+          <div class="kv"><span>實際</span><b class="good">47,400</b></div>
+        </div>
+        <div class="info-card">
+          <h3>🐷 儲蓄</h3>
+          <div class="kv"><span>目標</span><b>9,480</b></div>
+          <div class="kv"><span>目前結餘（收入 − 支出）</span><b class="good">19,050</b></div>
+          <div class="cap" style="margin:4px 0 0">月底才會知道實際存下多少</div>
+        </div>
+        <div class="info-card" style="background:var(--yuzu-soft)">
+          <h3>💡 調整建議</h3>
+          <ul class="tip-list"><li>照目前速度，生活費月底會超出約 1,600</li><li>交通已超出 600</li><li>娛樂只用了 25%，可以考慮移 1,500 給交通</li></ul>
+        </div>
+      </div>
+      <nav class="tabbar">
+        <button class="tab"><span class="ic">📒</span>記帳</button><button class="tab on"><span class="ic">📊</span>統計</button><button class="tab-plus" aria-label="記一筆"><span>＋</span></button><button class="tab"><span class="ic">🎯</span>預算</button><button class="tab"><span class="ic">⋯</span>更多</button>
+      </nav>
+    </div>
+    <p class="cap">進度條和預算頁同一套：正常柚子橘、花太快深橘斜紋＋⚡、超支紅色斜紋＋⚠。直線是今天的位置。</p>
+  </section>
+
+  <section>
+    <p class="label">D2. 圓餅圖（甜甜圈）</p>
+    <div class="phone">
+      <div class="content">
+        <div class="page-title"><h1>統計</h1></div>
+        <div class="month-nav"><button class="btn arrow">‹</button><b>2026 年 10 月</b><button class="btn arrow">›</button></div>
+        <div class="seg" style="margin-bottom:6px"><button>預算比對</button><button class="on">圓餅圖</button></div>
+        <div class="seg expense" style="width:160px;margin:10px auto 0"><button class="on">支出</button><button>收入</button></div>
+        <div class="donut-box">
+          <svg viewBox="0 0 220 220" id="donut" aria-label="10 月支出分類佔比"></svg>
+          <div class="donut-center">本月支出<b>29,950</b></div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <nav class="tabbar">
+        <button class="tab"><span class="ic">📒</span>記帳</button><button class="tab on"><span class="ic">📊</span>統計</button><button class="tab-plus" aria-label="記一筆"><span>＋</span></button><button class="tab"><span class="ic">🎯</span>預算</button><button class="tab"><span class="ic">⋯</span>更多</button>
+      </nav>
+    </div>
+    <p class="cap">每個分類有固定的顏色（跟著分類走，不會因為金額排名改變）。區塊之間留 2px 縫隙；圖例同時列出金額和比例，不必靠顏色辨認。點一塊或一列會切換成小分類。</p>
+  </section>
+</div>
+
+<!-- ======================= E ======================= -->
+<h2 class="group" id="more">E. 更多</h2>
+<div class="board">
+  <section>
+    <p class="label">E1. 更多</p>
+    <div class="phone">
+      <div class="content">
+        <div class="page-title"><h1>更多</h1></div>
+        <div class="group-label">記帳設定</div>
+        <div class="menu-list">
+          <button class="menu-row"><span class="ic">🗂</span><span>分類管理<small>7 個大分類 · 3 個收入分類</small></span><span class="go">›</span></button>
+          <button class="menu-row"><span class="ic">🔁</span><span>固定收支<small>4 筆啟用中</small></span><span class="go">›</span></button>
+        </div>
+        <div class="group-label">資料</div>
+        <div class="menu-list">
+          <button class="menu-row"><span class="ic">💾</span><span>備份與還原<small>上次備份：12 天前</small></span><span class="go">›</span></button>
+          <button class="menu-row danger"><span class="ic">🧹</span><span>清除全部資料</span><span class="go">›</span></button>
+        </div>
+        <div class="group-label">關於</div>
+        <div class="menu-list">
+          <div class="menu-row"><img src="../mascot/capybara-calm.svg" alt="" style="width:40px;height:40px"><span>小金芽<small>版本 2.0.0 · 資料只存在這台裝置</small></span></div>
+        </div>
+      </div>
+      <nav class="tabbar">
+        <button class="tab"><span class="ic">📒</span>記帳</button><button class="tab"><span class="ic">📊</span>統計</button><button class="tab-plus" aria-label="記一筆"><span>＋</span></button><button class="tab"><span class="ic">🎯</span>預算</button><button class="tab on"><span class="ic">⋯</span>更多</button>
+      </nav>
+    </div>
+  </section>
+
+  <section>
+    <p class="label">E2. 分類管理</p>
+    <div class="phone">
+      <div class="content">
+        <div class="backbar"><button class="btn">‹ 更多</button><h1>分類管理</h1></div>
+        <div class="seg" style="margin-bottom:14px"><button class="on">支出／儲蓄</button><button>收入</button></div>
+        <div class="menu-list">
+          <button class="menu-row"><span class="handle">⠿</span><span class="ic">🍙</span><span>生活費<small>吃飯、飲料、日用品</small></span><span class="dot" style="background:var(--cat-1);margin-left:auto"></span><span class="kind exp">支出</span></button>
+          <button class="menu-row"><span class="handle">⠿</span><span class="ic">🏠</span><span>居住<small>房租、水電</small></span><span class="dot" style="background:var(--cat-2);margin-left:auto"></span><span class="kind exp">支出</span></button>
+          <button class="menu-row"><span class="handle">⠿</span><span class="ic">🚌</span><span>交通<small>捷運、加油</small></span><span class="dot" style="background:var(--cat-3);margin-left:auto"></span><span class="kind exp">支出</span></button>
+          <button class="menu-row"><span class="handle">⠿</span><span class="ic">🎮</span><span>娛樂<small>沒有小分類</small></span><span class="dot" style="background:var(--cat-4);margin-left:auto"></span><span class="kind exp">支出</span></button>
+          <button class="menu-row"><span class="handle">⠿</span><span class="ic">🐷</span><span>儲蓄<small>不計入支出</small></span><span class="kind sav" style="margin-left:auto">儲蓄</span></button>
+        </div>
+        <button class="add" style="color:var(--expense-ink)">＋ 新增大分類</button>
+      </div>
+    </div>
+    <p class="cap">每個支出類大分類旁有它在圓餅圖的顏色點；儲蓄類不出現在支出圓餅圖，所以沒有顏色。</p>
+  </section>
+</div>
+
+<!-- ======================= F ======================= -->
+<h2 class="group" id="budget">F. 預算頁</h2>
+<div class="board">
+  <section>
+    <p class="label">F1. 預算頁加上分頁列</p>
+    <div class="phone">
+      <div class="content" style="padding-bottom:8px">
+        <div class="page-title"><h1>預算</h1></div>
+        <div class="plans" style="margin:10px -16px 8px"><span class="plan on">我的方案 <small>▾</small></span><span class="plan">加薪後</span><span class="plan plan-add">＋</span></div>
+        <div class="banner soft" style="font-size:13px">📅 10 月的預算使用這個方案</div>
+        <div class="card expense">
+          <div class="card-head"><span class="dot" style="width:26px;height:26px;border-radius:9px;border:2px solid var(--outline);display:grid;place-items:center;font-size:14px;background:#fff">🧺</span><h2>支出分配</h2><span class="right">已分配 87%</span></div>
+          <div class="card-body">
+            <div class="item exp">
+              <div class="row"><button class="handle">⠿</button><span class="emoji">🍙</span><span class="field grow" style="justify-content:space-between;font-weight:700">生活費 <span style="color:var(--ink-soft)">▾</span></span><button class="del">✕</button></div>
+              <div class="row"><label class="field amount w-pct primary"><input value="30" readonly><span class="unit">%</span></label><span class="swap">⇄</span><span class="field amount money computed grow"><span class="unit">NT$</span><span class="money-value">14,220</span></span></div>
+            </div>
+            <div class="item exp">
+              <div class="row"><button class="handle">⠿</button><span class="emoji">🏠</span><span class="field grow" style="justify-content:space-between;font-weight:700">居住 <span style="color:var(--ink-soft)">▾</span></span><button class="del" aria-label="加入固定收支" style="color:var(--ink);font-size:16px">🔁</button><button class="del">✕</button></div>
+              <div class="row"><label class="field amount w-pct computed"><input value="27.4" readonly><span class="unit">%</span></label><span class="swap">⇄</span><span class="field amount money primary grow"><span class="unit">NT$</span><span class="money-value">13,000</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="summary" style="position:relative;padding-bottom:12px">
+        <img class="mascot" src="../mascot/capybara-calm.svg" alt="">
+        <span class="bubble">還有 NT$ 5,960 可以分配</span>
+        <div class="meter"><i style="width:87%"></i></div>
+      </div>
+      <nav class="tabbar">
+        <button class="tab"><span class="ic">📒</span>記帳</button><button class="tab"><span class="ic">📊</span>統計</button><button class="tab-plus" aria-label="記一筆"><span>＋</span></button><button class="tab on"><span class="ic">🎯</span>預算</button><button class="tab"><span class="ic">⋯</span>更多</button>
+      </nav>
+    </div>
+    <p class="cap">支出項目的名稱改成「選分類」的按鈕（▾）。固定金額的項目在 ✕ 旁多一個 🔁，一鍵加入固定收支。摘要列縮成兩行，貼在分頁列上方。</p>
+  </section>
+</div>
+
+<!-- ======================= G ======================= -->
+<h2 class="group" id="spec">G. 設計規範（新增的部分）</h2>
+<div class="board">
+  <section>
+    <div class="spec">
+      <h3>分類顏色（圓餅圖）</h3>
+      <div class="swatches">
+        <div class="sw"><i style="background:var(--cat-1)"></i>1 橘<code>#E07B24</code></div>
+        <div class="sw"><i style="background:var(--cat-2)"></i>2 藍綠<code>#2B8CB0</code></div>
+        <div class="sw"><i style="background:var(--cat-3)"></i>3 紫<code>#8A63D2</code></div>
+        <div class="sw"><i style="background:var(--cat-4)"></i>4 綠<code>#2F9E62</code></div>
+        <div class="sw"><i style="background:var(--cat-5)"></i>5 粉<code>#D0609E</code></div>
+        <div class="sw"><i style="background:var(--cat-6)"></i>6 芥末黃<code>#C99A10</code></div>
+        <div class="sw"><i style="background:var(--cat-7)"></i>7 藍<code>#5B7FE0</code></div>
+        <div class="sw"><i style="background:var(--cat-other)"></i>其他<code>#B9AB9B</code></div>
+      </div>
+      <h3>狀態（一定搭配圖示＋文字）</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="badge ok">✓ 達標</span><span class="badge fast">⚡ 花太快</span><span class="badge over">⚠ 超支</span><span class="badge out">預算外</span><span class="tag">🔁 固定</span>
+      </div>
+      <h3>水豚（新增「慌張」）</h3>
+      <div class="mascots">
+        <figure><img src="../mascot/capybara-calm.svg" alt="">正常</figure>
+        <figure><img src="../mascot/capybara-sweat.svg" alt="">花太快</figure>
+        <figure><img src="../mascot/capybara-panic.svg" alt="">超支</figure>
+        <figure><img src="../mascot/capybara-done.svg" alt="">月結達標</figure>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  // 甜甜圈示意：顏色依分類固定（slot），區塊之間留 2px 縫隙
+  const data = [
+    ["🍙 生活費", 12300, "--cat-1"],
+    ["🏠 居住", 13000, "--cat-2"],
+    ["🚌 交通", 2600, "--cat-3"],
+    ["🎮 娛樂", 1200, "--cat-4"],
+    ["🎁 禮物", 850, "--cat-5"],
+  ];
+  const total = data.reduce((s, d) => s + d[1], 0);
+  const r = 82, c = 2 * Math.PI * r, gap = 2.5;
+  let offset = 0;
+  const svg = document.getElementById("donut");
+  // 底色用卡片色，所以縫隙是卡片色；內外圈另外畫咖啡色外框
+  const ring = (rr) => `<circle cx="110" cy="110" r="${rr}" fill="none" stroke="var(--outline)" stroke-width="2.5"/>`;
+  svg.innerHTML = `<circle cx="110" cy="110" r="${r}" fill="none" stroke="var(--surface)" stroke-width="36"/>` + ring(r + 18) + ring(r - 18) +
+    data.map(([, v, color]) => {
+      const len = (v / total) * c;
+      const seg = `<circle cx="110" cy="110" r="${r}" fill="none" stroke="var(${color})" stroke-width="34"
+        stroke-dasharray="${Math.max(0, len - gap)} ${c}" stroke-dashoffset="${-offset}" transform="rotate(-90 110 110)"/>`;
+      offset += len;
+      return seg;
+    }).join("");
+  document.getElementById("legend").innerHTML = data
+    .map(([name, v, color]) => `<button><i style="background:var(${color})"></i>${name}<span class="v">${v.toLocaleString("zh-TW")}</span><span class="p">${Math.round((v / total) * 100)}%</span></button>`)
+    .join("");
+</script>
+</body>
+</html>

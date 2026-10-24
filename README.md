@@ -18,7 +18,8 @@
 - [x] App v1.1.0：可加到主畫面、離線使用
 - [x] App v1.2.0：改名為小金芽
 - [x] App v1.3.0：拖曳排序、金額計算機、移除 📌
-- [ ] 規格書 v2.0：實際收支記帳（草稿討論中，`docs/SPEC-v2-draft.md`）
+- [x] 記帳功能：規格草稿、wireframe v2、視覺設計 v2
+- [ ] 記帳功能：開發 v2.0.0
 - [x] 放上網路（GitHub Pages）
 
 ## 在電腦上執行
@@ -30,6 +31,8 @@ npm start
 ```
 
 然後用瀏覽器打開 <http://localhost:8765>。
+
+> 小提醒：App 的離線功能（service worker）會把檔案存起來。本機修改後畫面沒變的話，按 Shift + 重新整理，或在瀏覽器開發者工具的 Application → Service Workers 取消註冊。
 
 ## 測試
 

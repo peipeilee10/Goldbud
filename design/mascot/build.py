@@ -76,6 +76,14 @@ EYES_SLEEP = f"""<path d="M72 100 Q78 105 84 100 M116 100 Q122 105 128 100" fill
 EYES_HAPPY = f"""<path d="M72 103 Q78 97 84 103 M116 103 Q122 97 128 103" fill="none" stroke="{C['line']}" stroke-width="3.2" stroke-linecap="round"/>"""
 
 
+# 慌張（超支）：睜大的眼睛＋小小張開的嘴
+EYES_PANIC = f"""<circle cx="78" cy="100" r="6" fill="#fff" stroke="{C['line']}" stroke-width="2.4"/>
+    <circle cx="122" cy="100" r="6" fill="#fff" stroke="{C['line']}" stroke-width="2.4"/>
+    <circle cx="78" cy="101" r="2.4" fill="{C['line']}"/>
+    <circle cx="122" cy="101" r="2.4" fill="{C['line']}"/>
+    <ellipse cx="100" cy="127" rx="3" ry="3.6" fill="{C['line']}"/>"""
+
+
 def yuzu(cx=100, cy=56):
     return f"""
     <circle cx="{cx}" cy="{cy}" r="15" fill="{C['yuzu']}" stroke="{C['line']}" stroke-width="4"/>
@@ -102,6 +110,13 @@ def sweat():
     <path d="M150 64 C144 74 142 80 146 85 C150 89 157 86 157 80 C157 75 153 70 150 64 Z" fill="{C['sweat']}" stroke="{C['water_line']}" stroke-width="2.5" stroke-linejoin="round"/>"""
 
 
+def sweat_both():
+    """兩邊都冒汗，再加三條慌張的短線"""
+    return sweat() + f"""
+    <path d="M50 64 C56 74 58 80 54 85 C50 89 43 86 43 80 C43 75 47 70 50 64 Z" fill="{C['sweat']}" stroke="{C['water_line']}" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M100 40 l0 -10 M84 44 l-5 -8 M116 44 l5 -8" stroke="{C['line']}" stroke-width="3" stroke-linecap="round"/>"""
+
+
 def svg(title, *parts):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="{title}">
   <defs>{FILTER}
@@ -119,8 +134,10 @@ STATES = {
     "calm": svg("水豚平靜坐著", ears(), body(), face(EYES_OPEN), feet()),
     # 已分配 = 100%
     "done": svg("水豚頂著柚子泡溫泉", ears(), body(), face(EYES_HAPPY), yuzu(), onsen()),
-    # 已分配 > 100%
+    # 已分配 > 100%；記帳「花太快」
     "sweat": svg("水豚冒汗", ears(), body(), face(EYES_OPEN), feet(), sweat()),
+    # 記帳超支
+    "panic": svg("水豚很慌張", ears(), body(), face(EYES_PANIC), feet(), sweat_both()),
 }
 
 

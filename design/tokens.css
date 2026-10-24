@@ -33,6 +33,23 @@
   --over-soft: #FBE0DD;
   --over-ink: #A9443E;
 
+  /* 記帳：花太快（警示，搭配 ⚡ 圖示和文字，不單靠顏色） */
+  --fast: #D9741F;
+  --fast-soft: #FCE3C8;
+  --fast-ink: #9A4E10;
+
+  /* 分類顏色（圓餅圖）：依分類建立順序分配，固定跟著分類，不依金額排名。
+     排成一圈時相鄰的顏色色盲也分得開（已用 dataviz 驗證工具檢查，見 DECISIONS D-043）；
+     第 8 個以後的分類併入「其他」。 */
+  --cat-1: #E07B24;  /* 橘 */
+  --cat-2: #2B8CB0;  /* 藍綠 */
+  --cat-3: #8A63D2;  /* 紫 */
+  --cat-4: #2F9E62;  /* 綠 */
+  --cat-5: #D0609E;  /* 粉 */
+  --cat-6: #C99A10;  /* 芥末黃 */
+  --cat-7: #5B7FE0;  /* 藍 */
+  --cat-other: #B9AB9B;
+
   /* 字型：數字用 Nunito（圓潤），中文用系統字 */
   --font-text: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
   --font-num: "Nunito", var(--font-text);
