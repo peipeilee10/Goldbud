@@ -1,4 +1,4 @@
-// 畫面與互動。計算在 calc.js，資料讀寫在 store.js。
+// 畫面與互動。計算在 calc.js，資料讀寫在 store.js，計算機在 calculator.js，拖曳在 drag.js。
 
 import {
   incomeTotal,
@@ -20,6 +20,8 @@ import {
   newIncome,
   newExpense,
 } from "./store.js";
+import * as calculator from "./calculator.js";
+import { makeSortable } from "./drag.js";
 import { APP_VERSION } from "./version.js";
 
 const EMOJIS = ["🍙", "🏠", "🐷", "🎮", "🚌", "💊", "📚", "🎁", "👕", "📱", "✈️", "🐱", "☕", "💡", "🛡️", "📈", "❤️", "💸"];
@@ -123,22 +125,32 @@ function incomeRow(item, isNew) {
       persist();
     },
   });
-  const amount = moneyInput({
-    label: "收入金額",
-    get: () => item.amount,
-    set: (v) => {
-      item.amount = v;
-      persist();
-      update();
-    },
-  });
+  const amount = moneyButton("income-amount", () =>
+    openCalculator({
+      title: item.name.trim() ? `${item.name.trim()}的金額` : "收入金額",
+      value: item.amount,
+      field: amount,
+      onSubmit: (v) => {
+        item.amount = v;
+        showMoney(amount, v);
+        persist();
+        update();
+      },
+    }),
+  );
+  showMoney(amount, item.amount);
   return h(
     "div",
     { class: isNew ? "item row pop" : "item row", "data-id": item.id },
+    dragHandle(),
     h("label", { class: "field grow" }, name),
-    h("label", { class: "field amount income-amount" }, h("span", { class: "unit" }, "NT$"), amount),
+    amount,
     h("button", { class: "del", "aria-label": "刪除這個收入", onclick: () => removeIncome(item.id) }, "✕"),
   );
+}
+
+function dragHandle() {
+  return h("button", { class: "handle", type: "button", "aria-label": "拖曳排序（也可以用上下鍵）" }, "⠿");
 }
 
 function removeIncome(id) {
@@ -155,27 +167,21 @@ function selectAll(input) {
   });
 }
 
-/** 金額輸入框：輸入時只接受數字，離開時加上千分位 */
-function moneyInput({ label, get, set }) {
-  const input = h("input", {
-    inputmode: "decimal",
-    placeholder: "0",
-    "aria-label": label,
-    autocomplete: "off",
-  });
-  const show = () => (input.value = get() == null ? "" : formatNumber(get()));
-  show();
-  input.addEventListener("focus", () => {
-    if (get() != null) input.value = String(get());
-    selectAll(input);
-  });
-  input.addEventListener("blur", show);
-  input.addEventListener("input", () => {
-    const clean = sanitizeTyping(input.value);
-    if (clean !== input.value) input.value = clean;
-    set(parseInput(clean));
-  });
-  return input;
+/** 金額欄位：點下去開啟計算機（SPEC 5.5） */
+function moneyButton(extraClass, onOpen) {
+  return h(
+    "button",
+    { class: `field amount money ${extraClass}`, type: "button", onclick: onOpen },
+    h("span", { class: "unit" }, "NT$"),
+    h("span", { class: "money-value" }),
+  );
+}
+
+function showMoney(button, value, label = "金額") {
+  const text = button.querySelector(".money-value");
+  text.textContent = value == null ? "0" : formatNumber(value);
+  text.classList.toggle("placeholder", value == null);
+  button.setAttribute("aria-label", `${label} ${value == null ? "未填" : formatMoney(value)}，開啟計算機`);
 }
 
 // ---------- 支出 ----------
@@ -200,7 +206,20 @@ function expenseRow(item, isNew) {
   });
 
   const pct = h("input", { inputmode: "decimal", placeholder: "0", "aria-label": "百分比", autocomplete: "off", "data-role": "pct" });
-  const amt = h("input", { inputmode: "decimal", placeholder: "0", "aria-label": "金額", autocomplete: "off", "data-role": "amt" });
+  const amt = moneyButton("grow", () =>
+    openCalculator({
+      title: item.name.trim() ? `${item.name.trim()}的金額` : "支出金額",
+      value: item.mode === "amount" && item.value == null ? null : calculator.roundResult(expenseView(item, incomeTotal(plan())).amount),
+      field: amt,
+      onSubmit: (v) => {
+        item.mode = "amount";
+        item.value = v;
+        persist();
+        update();
+      },
+    }),
+  );
+  amt.dataset.box = "amt";
 
   const edit = (input, mode, max) => () => {
     let clean = sanitizeTyping(input.value);
@@ -213,19 +232,11 @@ function expenseRow(item, isNew) {
     update();
   };
   pct.addEventListener("input", edit(pct, "percent", 100));
-  amt.addEventListener("input", edit(amt, "amount", Infinity));
-
-  // 進入輸入框時顯示沒有千分位的數字，方便修改
-  amt.addEventListener("focus", () => {
-    const v = expenseView(item, incomeTotal(plan())).amount;
-    amt.value = item.mode === "amount" && item.value == null ? "" : String(Math.round(v));
-    selectAll(amt);
-  });
   pct.addEventListener("focus", () => {
     if (pct.value === "—") pct.value = "";
     selectAll(pct);
   });
-  [pct, amt].forEach((i) => i.addEventListener("blur", () => fillExpense(row, item, true)));
+  pct.addEventListener("blur", () => fillExpense(row, item, true));
 
   const row = h(
     "div",
@@ -233,6 +244,7 @@ function expenseRow(item, isNew) {
     h(
       "div",
       { class: "row" },
+      dragHandle(),
       emoji,
       h("label", { class: "field grow" }, name),
       h("button", { class: "del", "aria-label": "刪除這個支出", onclick: () => removeExpense(item.id) }, "✕"),
@@ -240,9 +252,9 @@ function expenseRow(item, isNew) {
     h(
       "div",
       { class: "row" },
-      h("label", { class: "field amount w-pct", "data-box": "pct" }, h("span", { class: "pin", "aria-hidden": "true" }, "📌"), pct, h("span", { class: "unit" }, "%")),
+      h("label", { class: "field amount w-pct", "data-box": "pct" }, pct, h("span", { class: "unit" }, "%")),
       h("span", { class: "swap", "aria-hidden": "true" }, "⇄"),
-      h("label", { class: "field amount grow", "data-box": "amt" }, h("span", { class: "pin", "aria-hidden": "true" }, "📌"), h("span", { class: "unit" }, "NT$"), amt),
+      amt,
     ),
   );
   fillExpense(row, item, true);
@@ -254,15 +266,13 @@ function fillExpense(row, item, force = false) {
   const total = incomeTotal(plan());
   const view = expenseView(item, total);
   const pct = row.querySelector('[data-role="pct"]');
-  const amt = row.querySelector('[data-role="amt"]');
+  const amt = row.querySelector('[data-box="amt"]');
   const isPct = item.mode === "percent";
 
   if (force || document.activeElement !== pct) {
     pct.value = isPct ? (item.value == null ? "" : formatPercent(item.value)) : formatPercent(view.percent);
   }
-  if (force || document.activeElement !== amt) {
-    amt.value = !isPct && item.value == null ? "" : formatNumber(view.amount);
-  }
+  showMoney(amt, !isPct && item.value == null ? null : view.amount);
   row.querySelector('[data-box="pct"]').classList.toggle("primary", isPct);
   row.querySelector('[data-box="pct"]').classList.toggle("computed", !isPct);
   row.querySelector('[data-box="amt"]').classList.toggle("primary", !isPct);
@@ -354,6 +364,7 @@ function confetti() {
 function openSheet(title, ...body) {
   const prevFocus = document.activeElement;
   const close = () => {
+    sheet.dispatchEvent(new Event("sheetclose"));
     backdrop.remove();
     document.removeEventListener("keydown", onKey);
     prevFocus?.focus?.({ preventScroll: true });
@@ -477,6 +488,65 @@ function openEmojiPicker(item, button) {
   );
 }
 
+const CALC_KEYS = [
+  ["C", "fn"], ["⌫", "fn"], ["÷", "op"], ["×", "op"],
+  ["7"], ["8"], ["9"], ["−", "op"],
+  ["4"], ["5"], ["6"], ["+", "op"],
+  ["1"], ["2"], ["3"], ["=", "eq"],
+  ["00"], ["0"], ["."],
+];
+
+const resultFmt = new Intl.NumberFormat("zh-TW", { maximumFractionDigits: 2 });
+
+/** 金額計算機（SPEC 5.5）。onSubmit(value) 的 value 是數字或 null（清空） */
+function openCalculator({ title, value, field, onSubmit }) {
+  let state = calculator.start(value);
+  const exprEl = h("div", { class: "calc-expr" });
+  const resultEl = h("div", { class: "calc-result num", "aria-live": "polite" });
+  const submit = h("button", { class: "btn primary calc-submit", onclick: () => finish() }, "輸入");
+
+  const render = () => {
+    exprEl.textContent = calculator.formatExpr(state.expr) || " ";
+    const r = calculator.evaluate(state.expr);
+    resultEl.classList.toggle("error", !!r.error);
+    resultEl.textContent = r.error ?? `= ${r.value == null ? "0" : resultFmt.format(r.value)}`;
+    submit.disabled = !!r.error;
+  };
+
+  const press = (key) => {
+    state = calculator.press(state, key);
+    render();
+  };
+
+  const finish = () => {
+    const r = calculator.evaluate(state.expr);
+    if (r.error) return;
+    close();
+    onSubmit(r.value);
+  };
+
+  const keys = h(
+    "div",
+    { class: "calc-keys" },
+    CALC_KEYS.map(([k, kind]) =>
+      h("button", { class: `calc-key ${kind ?? "num"}`, type: "button", "aria-label": k === "⌫" ? "刪除一格" : k === "C" ? "全部清除" : k, onclick: () => press(k) }, k),
+    ),
+  );
+
+  const close = openSheet(title, h("div", { class: "calc-display" }, exprEl, resultEl), keys, submit);
+  const sheet = keys.closest(".sheet");
+  sheet.classList.add("calc");
+  field.classList.add("editing");
+  sheet.addEventListener("sheetclose", () => field.classList.remove("editing"));
+  sheet.addEventListener("keydown", (e) => {
+    const key = calculator.keyFromKeyboard(e.key);
+    if (!key || e.metaKey || e.ctrlKey) return;
+    e.preventDefault();
+    press(key);
+  });
+  render();
+}
+
 function openAppMenu() {
   const close = openSheet(
     "更多選項",
@@ -535,6 +605,17 @@ $("add-expense").addEventListener("click", () => {
 });
 
 $("app-menu").addEventListener("click", openAppMenu);
+
+// 拖曳排序：清單元素不會被替換，綁一次就好
+const reorder = (list, ids) => ids.map((id) => list.find((x) => x.id === id));
+makeSortable($("income-list"), ".handle", (ids) => {
+  plan().incomes = reorder(plan().incomes, ids);
+  persist();
+});
+makeSortable($("expense-list"), ".handle", (ids) => {
+  plan().expenses = reorder(plan().expenses, ids);
+  persist();
+});
 
 // 預先載入四種水豚，切換狀態時不閃爍
 Object.values(MASCOT).forEach((src) => (new Image().src = src));

@@ -10,13 +10,14 @@
 
 ## 目前進度
 
-- [x] 規格書 v1.5
+- [x] 規格書 v1.6
 - [x] Wireframe v1
 - [x] 水豚吉祥物 v1
 - [x] 視覺設計 v1
 - [x] App v1.0.0
 - [x] App v1.1.0：可加到主畫面、離線使用
 - [x] App v1.2.0：改名為小金芽
+- [x] App v1.3.0：拖曳排序、金額計算機、移除 📌
 - [x] 放上網路（GitHub Pages）
 
 ## 在電腦上執行
@@ -47,6 +48,8 @@ src/
   app.js           畫面與互動
   app.css          App 樣式
   calc.js          計算（% ⇄ 金額、加總、格式）
+  calculator.js    金額計算機的邏輯
+  drag.js          拖曳排序
   store.js         資料建立、讀寫、版本轉換
   version.js       App 版本號
 tests/             單元測試

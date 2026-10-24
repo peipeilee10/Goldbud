@@ -2,7 +2,7 @@
 // 每次發布新版都要更新 VERSION（tests/version.test.js 會檢查和 src/version.js 一致），
 // 手機才會下載新檔案。
 
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 const CACHE = `goldbud-${VERSION}`;
 // 舊名稱時期的快取也一起清掉
 const OLD_PREFIXES = ["goldbud-", "budget-capybara-"];
@@ -14,6 +14,8 @@ const FILES = [
   "src/app.css",
   "src/app.js",
   "src/calc.js",
+  "src/calculator.js",
+  "src/drag.js",
   "src/store.js",
   "src/version.js",
   "design/tokens.css",

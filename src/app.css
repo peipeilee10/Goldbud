@@ -109,14 +109,33 @@ h1, h2, h3 { margin: 0; }
 .expense .field:focus-within { border-color: var(--expense); box-shadow: 0 0 0 3px var(--expense-soft); }
 .field.computed { background: transparent; border-style: dashed; color: var(--ink-soft); }
 .field.primary { border: 2.5px solid var(--expense); background: #fff; }
-.pin {
-  position: absolute; top: -10px; left: -6px;
-  width: 22px; height: 22px; display: none; place-items: center;
-  font-size: 11px; background: #fff; border: 2px solid var(--outline); border-radius: 50%;
-  pointer-events: none;
+.income-amount { width: 132px; flex: none; }
+
+/* 金額欄位（按鈕，點下去開計算機） */
+.field.money {
+  font: inherit; color: inherit; text-align: right; cursor: pointer;
+  justify-content: flex-end;
 }
-.field.primary .pin { display: grid; }
-.income-amount { width: 140px; flex: none; }
+.money-value { font: 800 16px var(--font-num); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.money-value.placeholder { color: var(--hairline); }
+.income .field.money.editing { border-color: var(--income); box-shadow: 0 0 0 3px var(--income-soft); }
+.expense .field.money.editing { border-color: var(--expense); box-shadow: 0 0 0 3px var(--expense-soft); }
+
+/* 拖曳把手 */
+.handle {
+  flex: none; width: 28px; height: var(--tap); margin-right: -4px; padding: 0;
+  border: 0; background: transparent; border-radius: 8px;
+  color: var(--ink-soft); font-size: 18px; line-height: 1;
+  cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.handle:focus-visible { outline: 3px solid var(--yuzu); outline-offset: 0; }
+.dragging {
+  position: relative; z-index: 3;
+  background: var(--surface); border-radius: 16px;
+  box-shadow: 0 10px 24px #6b4a2f33, 0 0 0 2px var(--outline);
+}
+.dragging .handle { cursor: grabbing; color: var(--ink); }
+body.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
 
 .del {
   flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0;
@@ -128,7 +147,9 @@ h1, h2, h3 { margin: 0; }
 .exp { padding: 10px 0; border-top: 2px dashed var(--hairline); }
 .exp:first-child { border-top: 0; padding-top: 0; }
 .exp + .exp { margin-top: 0; }
-.exp .row + .row { padding-left: 52px; margin-top: 8px; }
+.exp .row + .row { padding-left: 32px; margin-top: 8px; }
+.exp.dragging { padding: 10px 6px; margin: 0 -6px; border-top-color: transparent; }
+.row.item.dragging { padding: 4px; margin-left: -4px; margin-right: -4px; }
 .emoji {
   flex: none; width: var(--tap); height: var(--tap); padding: 0;
   display: grid; place-items: center; font-size: 22px;
@@ -241,6 +262,27 @@ h1, h2, h3 { margin: 0; }
   border: 2px solid var(--hairline); border-radius: 14px; background: #fff;
 }
 .emojis button.on { border: var(--border); background: var(--expense-soft); box-shadow: 0 3px 0 var(--outline); }
+
+/* ---------- 計算機 ---------- */
+.calc-display {
+  background: #fff; border: 2px solid var(--hairline); border-radius: var(--r-field);
+  padding: 8px 12px; margin-bottom: 12px; text-align: right;
+}
+.calc-expr { min-height: 22px; color: var(--ink-soft); font: 700 15px var(--font-num); word-break: break-all; }
+.calc-result { font-size: 30px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
+.calc-result.error { font: 800 18px var(--font-text); color: var(--over-ink); padding: 6px 0; }
+.calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 52px; gap: 8px; margin-bottom: 12px; }
+.calc-key {
+  border: var(--border); border-radius: 14px; background: #fff;
+  box-shadow: 0 3px 0 var(--outline);
+  font: 800 20px var(--font-num); color: var(--ink);
+  transition: transform .06s, box-shadow .06s;
+}
+.calc-key:active { transform: translateY(2px); box-shadow: var(--lift-pressed); }
+.calc-key.op { background: var(--expense-soft); color: var(--expense-ink); font-size: 22px; }
+.calc-key.fn { background: var(--bg); font-size: 18px; }
+.calc-key.eq { background: var(--yuzu); grid-row: span 2; font-size: 24px; }
+.calc-submit { width: 100%; height: 52px; font-size: 17px; }
 
 @keyframes fade { from { opacity: 0; } }
 @keyframes slide-up { from { transform: translateY(100%); } }
