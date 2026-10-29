@@ -59,6 +59,34 @@ function startup() {
   }
 }
 
+/**
+ * 擋住 iPhone「快速點兩下就放大」（D-060）。
+ * CSS 的 touch-action 在加到主畫面的 App 裡不一定有效，所以再用程式擋一次：
+ * 350ms 內的第二下點擊，取消瀏覽器的預設動作（放大），再自己補一次點擊，按鍵照樣按得到。
+ * 輸入框不處理（點兩下選字要保留）；手指有移動（捲動、拖曳）也不處理。
+ */
+function preventDoubleTapZoom() {
+  let lastEnd = 0;
+  let start = null;
+  document.addEventListener("touchstart", (e) => (start = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null), { passive: true });
+  document.addEventListener(
+    "touchend",
+    (e) => {
+      const now = Date.now();
+      const quick = now - lastEnd < 350;
+      lastEnd = now;
+      const t = e.changedTouches[0];
+      const moved = !start || !t || Math.hypot(t.clientX - start.x, t.clientY - start.y) > 10;
+      if (!quick || moved || !e.cancelable || e.target.closest("input, textarea, select, [contenteditable]")) return;
+      e.preventDefault();
+      const target = e.target.closest("button, a, label, [role=switch], [tabindex]");
+      target?.click();
+    },
+    { passive: false },
+  );
+}
+preventDoubleTapZoom();
+
 // 分頁列的實際高度（含 iPhone 下方安全區）存到 --tabbar-h，摘要列和提示條才會剛好貼在它上方
 const tabbar = document.querySelector(".tabbar");
 const syncTabbar = () => document.documentElement.style.setProperty("--tabbar-h", `${tabbar.offsetHeight}px`);

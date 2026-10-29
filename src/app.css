@@ -4,6 +4,8 @@
 [hidden] { display: none !important; }
 /* manipulation：保留雙指縮放，但取消「快速點兩下就放大」，連按計算機鍵才不會被放大 */
 html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+/* iPhone 有時只看被點到的元素本身，所以每個元素都設一次（拖曳把手另外設成 none） */
+* { touch-action: manipulation; }
 button, .tab, .chip, .cat { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 body {
   margin: 0;
