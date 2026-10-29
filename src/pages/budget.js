@@ -1,7 +1,7 @@
 // 預算頁（SPEC 第 3～6 節；v2 起項目改成選共用分類，見 B3.2）
 
 import { incomeTotal, expenseView, summarize, formatNumber, formatMoney, formatPercent, parseInput, sanitizeTyping } from "../calc.js";
-import { defaultPlan, clonePlan, uniqueName, newIncome, newExpense } from "../store.js";
+import { defaultPlan, clonePlan, uniqueName, newIncome, newExpense, KINDS, kindInfo } from "../store.js";
 import { ensureMonth } from "../ledger.js";
 import { todayStr, monthKey } from "../dates.js";
 import * as calculator from "../calculator.js";
@@ -220,10 +220,49 @@ function removeItem(list, id) {
 
 // ---------- 支出 ----------
 
+const kindOf = (item) => findCategory(item.categoryId)?.kind ?? "variable";
+
+/** 支出分成「固定支出、變動支出、儲蓄／投資」三段，各自有小計和新增按鈕 */
 function renderExpenses(popId) {
-  const list = $("expense-list");
-  list.replaceChildren(...plan().expenses.map((item) => expenseRow(item, item.id === popId)));
-  if (!plan().expenses.length) list.append(h("p", { class: "empty-hint" }, "還沒有支出項目"));
+  const root = $("expense-list");
+  root.replaceChildren(
+    ...KINDS.map(({ kind, label, icon }) => {
+      const items = plan().expenses.filter((e) => kindOf(e) === kind);
+      const list = h("div", { class: "kind-list", "data-kind": kind }, items.map((item) => expenseRow(item, item.id === popId)));
+      if (!items.length) list.append(h("p", { class: "empty-hint" }, `還沒有${label}`));
+      makeSortable(list, ".handle", () => {
+        // 三段的順序依畫面重新排，段落之間的相對位置不變
+        const ids = [...root.querySelectorAll(".kind-list [data-id]")].map((el) => el.dataset.id);
+        plan().expenses = ids.map((id) => plan().expenses.find((x) => x.id === id));
+        persist();
+      });
+      return h(
+        "section",
+        { class: `kind-group ${kind}` },
+        h("div", { class: "kind-head" }, h("span", { class: "kind-ic", "aria-hidden": "true" }, icon), h("b", {}, label), h("span", { class: "kind-sum", "data-sum": kind })),
+        list,
+        h("button", { class: "add small", onclick: () => addExpense(kind) }, `＋ 新增${label}`),
+      );
+    }),
+  );
+}
+
+function addExpense(kind) {
+  pickCategory({
+    type: "expense",
+    title: `新增${kindInfo(kind).label}`,
+    kinds: [kind],
+    newKind: kind,
+    exclude: new Set(plan().expenses.map((e) => e.categoryId)),
+    onPick: (c) => {
+      const item = newExpense(c.id);
+      plan().expenses.push(item);
+      persist();
+      renderExpenses(item.id);
+      update();
+      showNew("expense-list", item.id);
+    },
+  });
 }
 
 function expenseRow(item, isNew) {
@@ -293,7 +332,7 @@ function expenseRow(item, isNew) {
     {
       class: "del recur",
       "aria-label": "加入固定收支",
-      hidden: item.mode !== "amount" || cat?.kind !== "expense",
+      hidden: item.mode !== "amount" || cat?.kind === "saving",
       onclick: () => openRecurringFromBudget({ categoryId: item.categoryId, amount: expenseView(item, incomeTotal(plan())).amount, name: cat?.name ?? "" }),
     },
     "🔁",
@@ -332,7 +371,7 @@ function fillExpense(row, item, force = false) {
   amt.classList.toggle("primary", !isPct);
   amt.classList.toggle("computed", isPct);
   const recur = row.querySelector(".recur");
-  if (recur) recur.hidden = isPct || findCategory(item.categoryId)?.kind !== "expense";
+  if (recur) recur.hidden = isPct || findCategory(item.categoryId)?.kind === "saving";
 }
 
 // ---------- 摘要與即時更新 ----------
@@ -347,6 +386,13 @@ function update() {
   for (const item of p.expenses) {
     const row = document.querySelector(`#expense-list [data-id="${item.id}"]`);
     if (row) fillExpense(row, item);
+  }
+  // 每段的小計
+  for (const { kind } of KINDS) {
+    const el = document.querySelector(`#expense-list [data-sum="${kind}"]`);
+    if (!el) continue;
+    const amount = p.expenses.filter((e) => kindOf(e) === kind).reduce((sum, e) => sum + expenseView(e, s.total).amount, 0);
+    el.textContent = s.total > 0 ? `${formatPercent((amount / s.total) * 100)}% · ${formatMoney(amount)}` : formatMoney(amount);
   }
 
   const over = s.status === "over";
@@ -421,28 +467,10 @@ export function mount() {
       },
     }),
   );
-  $("add-expense").addEventListener("click", () =>
-    pickCategory({
-      type: "expense",
-      exclude: new Set(plan().expenses.map((e) => e.categoryId)),
-      onPick: (c) => {
-        const item = newExpense(c.id);
-        plan().expenses.push(item);
-        persist();
-        renderExpenses(item.id);
-        update();
-        showNew("expense-list", item.id);
-      },
-    }),
-  );
-
   const reorder = (list, ids) => ids.map((id) => list.find((x) => x.id === id));
   makeSortable($("income-list"), ".handle", (ids) => {
     plan().incomes = reorder(plan().incomes, ids);
     persist();
   });
-  makeSortable($("expense-list"), ".handle", (ids) => {
-    plan().expenses = reorder(plan().expenses, ids);
-    persist();
-  });
+
 }

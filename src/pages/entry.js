@@ -1,7 +1,7 @@
 // 記一筆／編輯紀錄的面板（SPEC B4，wireframe B、C1）
 
 import * as calculator from "../calculator.js";
-import { newEntry, uid } from "../store.js";
+import { newEntry, uid, isSpending } from "../store.js";
 import { recentCombos, deleteEntry } from "../ledger.js";
 import { todayStr, addDays, dayLabel } from "../dates.js";
 import { h, openSheet, confirmSheet, toast, keypad, bindCalcKeyboard, formatAmount, promptSheet } from "../ui.js";
@@ -113,7 +113,7 @@ export function openEntrySheet({ entry = null, preset = {} } = {}) {
   }
 
   function categoryList() {
-    return s.type === "income" ? data.incomeCategories : data.categories.filter((c) => c.kind === "expense");
+    return s.type === "income" ? data.incomeCategories : data.categories.filter(isSpending);
   }
 
   function renderRecent() {
@@ -180,7 +180,8 @@ export function openEntrySheet({ entry = null, preset = {} } = {}) {
   function addCategory() {
     pickCategory({
       type: s.type,
-      onlyKind: s.type === "expense" ? "expense" : null,
+      kinds: s.type === "expense" ? ["fixed", "variable"] : null,
+      newKind: s.type === "expense" ? "variable" : null,
       onPick: (c) => {
         s.categoryId = c.id;
         s.subcategoryId = null;

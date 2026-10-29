@@ -3,7 +3,7 @@
 export const STORAGE_KEY = "goldbud";
 // App 改名前用過的 key：新 key 沒有資料時，從這裡搬過來
 const LEGACY_KEYS = ["budget-capybara"];
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const CATEGORY_COLORS = 7; // --cat-1 ～ --cat-7
 
 export function uid() {
@@ -15,20 +15,32 @@ const now = () => new Date().toISOString();
 
 // ---------- 分類 ----------
 
+/** 大分類的類型：固定支出、變動支出、儲蓄（SPEC B3.1） */
+export const KINDS = [
+  { kind: "fixed", label: "固定支出", short: "固定", icon: "🏠" },
+  { kind: "variable", label: "變動支出", short: "變動", icon: "🛒" },
+  { kind: "saving", label: "儲蓄／投資", short: "儲蓄", icon: "🐷" },
+];
+export const kindInfo = (kind) => KINDS.find((k) => k.kind === kind) ?? KINDS[1];
+
+/** 固定或變動支出（儲蓄類不算支出） */
+export const isSpending = (cat) => cat?.kind === "fixed" || cat?.kind === "variable";
+
 /** 下一個還沒被支出類大分類用過的顏色；7 個都用完回傳 null（圓餅圖併入「其他」） */
 export function nextColor(categories) {
-  const used = new Set(categories.filter((c) => c.kind === "expense").map((c) => c.color));
+  // 不是儲蓄類的都算（轉換舊資料時還會有 v2 的 "expense"）
+  const used = new Set(categories.filter((c) => c.kind !== "saving").map((c) => c.color));
   for (let i = 1; i <= CATEGORY_COLORS; i++) if (!used.has(i)) return i;
   return null;
 }
 
-export function newCategory(categories, { name, emoji = "💸", kind = "expense", subcategories = [] }) {
+export function newCategory(categories, { name, emoji = "💸", kind = "variable", subcategories = [] }) {
   return {
     id: uid(),
     name,
     emoji,
     kind,
-    color: kind === "expense" ? nextColor(categories) : null,
+    color: kind === "saving" ? null : nextColor(categories),
     subcategories: subcategories.map((n) => ({ id: uid(), name: n })),
   };
 }
@@ -37,9 +49,9 @@ export function newIncomeCategory(name, emoji = "💰") {
   return { id: uid(), name, emoji };
 }
 
-/** 名稱看起來是存錢用的，就當成儲蓄類 */
+/** 名稱看起來是存錢用的，就當成儲蓄類；其他預設是變動支出 */
 export function guessKind(name) {
-  return /儲蓄|存|投資/.test(name) ? "saving" : "expense";
+  return /儲蓄|存|投資/.test(name) ? "saving" : "variable";
 }
 
 // ---------- 方案 ----------
@@ -61,7 +73,7 @@ export function defaultData() {
     return c;
   };
   const food = add({ name: "飲食", emoji: "🍙", subcategories: ["吃飯", "飲料"] });
-  const home = add({ name: "居住", emoji: "🏠", subcategories: ["房租", "水電"] });
+  const home = add({ name: "居住", emoji: "🏠", kind: "fixed", subcategories: ["房租", "水電"] });
   const move = add({ name: "交通", emoji: "🚌", subcategories: ["捷運", "加油"] });
   const fun = add({ name: "娛樂", emoji: "🎮" });
   const saving = add({ name: "儲蓄", emoji: "🐷", kind: "saving" });
@@ -187,7 +199,8 @@ const MIGRATIONS = {
       expenses: p.expenses.map((e) => {
         const name = (e.name ?? "").trim() || "未命名";
         if (!catByName.has(name)) {
-          const c = newCategory(categories, { name, emoji: e.emoji || "💸", kind: guessKind(name) });
+          // 先用 v2 的類型（支出／儲蓄），轉到 v3 時再分固定／變動
+          const c = newCategory(categories, { name, emoji: e.emoji || "💸", kind: guessKind(name) === "saving" ? "saving" : "expense" });
           categories.push(c);
           catByName.set(name, c);
         }
@@ -215,6 +228,19 @@ const MIGRATIONS = {
       lastBackupAt: null,
     };
   },
+};
+
+// v2 → v3：支出類分成固定／變動（SPEC B11.1）。
+// 方案裡用固定金額填的、或有固定收支的 → 固定支出；其他 → 變動支出
+MIGRATIONS[2] = (d) => {
+  const fixedIds = new Set();
+  for (const p of d.plans) for (const e of p.expenses) if (e.mode === "amount") fixedIds.add(e.categoryId);
+  for (const r of d.recurring) if (r.type === "expense") fixedIds.add(r.categoryId);
+  return {
+    ...d,
+    schemaVersion: 3,
+    categories: d.categories.map((c) => (c.kind === "expense" ? { ...c, kind: fixedIds.has(c.id) ? "fixed" : "variable" } : c)),
+  };
 };
 
 export function migrate(data) {

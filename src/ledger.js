@@ -2,7 +2,7 @@
 
 import { incomeTotal, expenseView } from "./calc.js";
 import { monthKey, daysInMonth, dayInMonth, monthsBetween, todayStr } from "./dates.js";
-import { newEntry, CATEGORY_COLORS } from "./store.js";
+import { newEntry, CATEGORY_COLORS, isSpending } from "./store.js";
 
 const FAST_MARGIN = 15; // 使用率比月份進度多 15 個百分點以上 → 花太快
 const UNDERUSED = 70; // 使用率 < 70% → 預算可能給太多
@@ -95,16 +95,14 @@ export function setMonthPlan(data, key, planId) {
 export function planBudget(plan, categories) {
   const income = incomeTotal(plan);
   const byCategory = new Map();
-  let expenseTotal = 0;
-  let savingTotal = 0;
+  const byKind = { fixed: 0, variable: 0, saving: 0 };
   for (const item of plan.expenses) {
     const amount = expenseView(item, income).amount;
     byCategory.set(item.categoryId, (byCategory.get(item.categoryId) ?? 0) + amount);
-    const cat = categories.find((c) => c.id === item.categoryId);
-    if (cat?.kind === "saving") savingTotal += amount;
-    else expenseTotal += amount;
+    const kind = categories.find((c) => c.id === item.categoryId)?.kind ?? "variable";
+    byKind[kind] = (byKind[kind] ?? 0) + amount;
   }
-  return { income, byCategory, expenseTotal, savingTotal };
+  return { income, byCategory, byKind, expenseTotal: byKind.fixed + byKind.variable, savingTotal: byKind.saving };
 }
 
 // ---------- 月統計 ----------
@@ -145,13 +143,11 @@ export function compareMonth(data, key, today = todayStr()) {
   const spentByCat = new Map();
   const spentBySub = new Map();
   const fixedByCat = new Map();
-  let fixedTotal = 0;
   for (const e of entries) {
     if (e.type !== "expense") continue;
     spentByCat.set(e.categoryId, (spentByCat.get(e.categoryId) ?? 0) + e.amount);
     if (e.source === "recurring") {
       fixedByCat.set(e.categoryId, (fixedByCat.get(e.categoryId) ?? 0) + e.amount);
-      fixedTotal += e.amount;
     }
     const sk = `${e.categoryId}|${e.subcategoryId ?? ""}`;
     spentBySub.set(sk, (spentBySub.get(sk) ?? 0) + e.amount);
@@ -166,16 +162,23 @@ export function compareMonth(data, key, today = todayStr()) {
     return list.sort((a, b) => b.amount - a.amount);
   };
 
+  // 固定支出不判斷「花太快」：本來就是一次付清（SPEC B7.1）
   const rows = [];
   const inPlan = new Set();
   for (const item of plan.expenses) {
     const cat = data.categories.find((c) => c.id === item.categoryId);
-    if (!cat || cat.kind !== "expense" || inPlan.has(cat.id)) continue;
+    if (!cat || !isSpending(cat) || inPlan.has(cat.id)) continue;
     inPlan.add(cat.id);
     const b = budget.byCategory.get(cat.id) ?? 0;
     const actual = spentByCat.get(cat.id) ?? 0;
-    rows.push({ category: cat, budget: b, actual, pct: b > 0 ? (actual / b) * 100 : null, status: status(actual, b, ratio, fixedByCat.get(cat.id) ?? 0), subs: subsOf(cat) });
+    const st = cat.kind === "fixed" ? status(actual, b, null) : status(actual, b, ratio, fixedByCat.get(cat.id) ?? 0);
+    rows.push({ category: cat, kind: cat.kind, budget: b, actual, pct: b > 0 ? (actual / b) * 100 : null, status: st, subs: subsOf(cat) });
   }
+  const group = (kind) => {
+    const list = rows.filter((r) => r.kind === kind);
+    return { budget: list.reduce((s, r) => s + r.budget, 0), actual: list.reduce((s, r) => s + r.actual, 0) };
+  };
+  const groups = { fixed: group("fixed"), variable: group("variable") };
 
   // 儲蓄類分類的支出（例如記了一筆「儲蓄」）也視為預算外的支出另外列出
   const outside = [];
@@ -188,13 +191,19 @@ export function compareMonth(data, key, today = todayStr()) {
 
   const hasIncome = entries.some((e) => e.type === "income");
   const actualIncome = hasIncome ? totals.income : budget.income;
-  const overall = status(totals.expense, budget.expenseTotal, ratio, fixedTotal);
+  // 整月：超支看全部支出；花太快只看變動支出（扣掉記在變動分類裡的固定收支）
+  let overall = status(totals.expense, budget.expenseTotal, null);
+  if (overall === "ok" && ratio != null) {
+    const variableFixed = rows.filter((r) => r.kind === "variable").reduce((s, r) => s + (fixedByCat.get(r.category.id) ?? 0), 0);
+    if (status(groups.variable.actual, groups.variable.budget, ratio, variableFixed) === "fast") overall = "fast";
+  }
 
   return {
     key,
     plan,
     ratio,
     rows,
+    groups,
     outside,
     overall: { budget: budget.expenseTotal, actual: totals.expense, pct: budget.expenseTotal > 0 ? (totals.expense / budget.expenseTotal) * 100 : null, status: overall },
     income: { budget: budget.income, actual: totals.income, hasIncome },
@@ -218,7 +227,8 @@ export function suggestions(cmp) {
 
   // 月底（或過去月份）才判斷「用得少」，月初大家都用得少
   if (!current || cmp.ratio >= 0.8) {
-    const under = cmp.rows.filter((r) => r.budget > 0 && r.pct < UNDERUSED);
+    // 固定支出用得少（例如這個月沒繳）不算預算給太多
+    const under = cmp.rows.filter((r) => r.kind === "variable" && r.budget > 0 && r.pct < UNDERUSED);
     for (const r of under) tips.push({ kind: "underused", category: r.category, pct: r.pct, spare: r.budget - r.actual });
     const needy = cmp.rows.filter((r) => r.status === "over").sort((a, b) => b.actual - b.budget - (a.actual - a.budget))[0];
     const donor = under.sort((a, b) => b.budget - b.actual - (a.budget - a.actual))[0];

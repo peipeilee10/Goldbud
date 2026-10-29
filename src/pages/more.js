@@ -1,6 +1,6 @@
 // 更多頁：分類管理、固定收支、備份與還原、清除資料（SPEC B3、B9、B10，wireframe E）
 
-import { defaultData, newCategory, newIncomeCategory, newRecurring, uid, CATEGORY_COLORS } from "../store.js";
+import { defaultData, newCategory, newIncomeCategory, newRecurring, uid, CATEGORY_COLORS, KINDS, kindInfo, isSpending } from "../store.js";
 import { categoryUsage, deleteCategory, deleteSubcategory, runRecurring } from "../ledger.js";
 import { exportBackup, parseBackup, describe, daysSinceBackup } from "../backup.js";
 import { todayStr, monthKey, monthTitle, shiftMonth, dayInMonth } from "../dates.js";
@@ -98,7 +98,7 @@ function categoriesPage() {
     h(
       "div",
       { class: "seg" },
-      h("button", { class: income ? null : "on", onclick: () => ((catTab = "expense"), render(parts)) }, "支出／儲蓄"),
+      h("button", { class: income ? null : "on", onclick: () => ((catTab = "expense"), render(parts)) }, "支出與儲蓄"),
       h("button", { class: income ? "on" : null, onclick: () => ((catTab = "income"), render(parts)) }, "收入"),
     ),
     h(
@@ -114,8 +114,8 @@ function categoriesPage() {
             { class: "row-link", href: `#/more/categories/${c.id}` },
             h("span", { class: "ic" }, c.emoji),
             h("span", {}, c.name, income ? null : h("small", {}, c.kind === "saving" ? "不計入支出" : c.subcategories.map((s) => s.name).join("、") || "沒有小分類")),
-            !income && c.kind === "expense" ? h("span", { class: "dot", style: `background:${c.color ? `var(--cat-${c.color})` : "var(--cat-other)"}` }) : null,
-            income ? null : h("span", { class: `kind ${c.kind === "saving" ? "sav" : "exp"}` }, c.kind === "saving" ? "儲蓄" : "支出"),
+            !income && isSpending(c) ? h("span", { class: "dot", style: `background:${c.color ? `var(--cat-${c.color})` : "var(--cat-other)"}` }) : null,
+            income ? null : h("span", { class: `kind ${c.kind}` }, kindInfo(c.kind).short),
             h("span", { class: "go" }, "›"),
           ),
         ),
@@ -132,7 +132,7 @@ function categoriesPage() {
             placeholder: income ? "例如：獎金" : "例如：寵物",
             onSubmit: (name) => {
               const d = getData();
-              const c = income ? newIncomeCategory(name) : newCategory(d.categories, { name, kind: "expense" });
+              const c = income ? newIncomeCategory(name) : newCategory(d.categories, { name, kind: "variable" });
               (income ? d.incomeCategories : d.categories).push(c);
               commit();
               go(`#/more/categories/${c.id}`);
@@ -184,18 +184,19 @@ function categoryEdit(id) {
           h(
             "div",
             { class: "seg" },
-            h("button", { class: c.kind === "expense" ? "on" : null, onclick: () => setKind(c, "expense") }, "支出"),
-            h("button", { class: c.kind === "saving" ? "on" : null, onclick: () => setKind(c, "saving") }, "儲蓄"),
+            KINDS.map(({ kind, short }) => h("button", { class: c.kind === kind ? "on" : null, "aria-pressed": String(c.kind === kind), onclick: () => setKind(c, kind) }, short)),
           ),
+          c.kind === "fixed" ? h("p", { class: "cap" }, "每月金額差不多的支出（房租、管理費、訂閱）。統計時不判斷「花太快」。") : null,
+          c.kind === "variable" ? h("p", { class: "cap" }, "每月會變動的支出（吃飯、交通、娛樂）。統計時會提醒花錢速度。") : null,
           c.kind === "saving" ? h("p", { class: "cap" }, "儲蓄類不算支出：預算比對時用「收入 − 支出」來比，記帳時也不能選。") : null,
-          c.kind === "expense"
+          isSpending(c)
             ? [
                 h("div", { class: "mini-label" }, "圓餅圖顏色"),
                 h(
                   "div",
                   { class: "colors" },
                   Array.from({ length: CATEGORY_COLORS }, (_, i) => i + 1).map((n) => {
-                    const owner = data.categories.find((x) => x !== c && x.kind === "expense" && x.color === n);
+                    const owner = data.categories.find((x) => x !== c && isSpending(x) && x.color === n);
                     return h(
                       "button",
                       {
@@ -248,7 +249,7 @@ function setKind(c, kind) {
   c.kind = kind;
   if (kind === "saving") c.color = null;
   else c.color ??= (() => {
-    const used = new Set(data.categories.filter((x) => x !== c && x.kind === "expense").map((x) => x.color));
+    const used = new Set(data.categories.filter((x) => x !== c && isSpending(x)).map((x) => x.color));
     for (let i = 1; i <= CATEGORY_COLORS; i++) if (!used.has(i)) return i;
     return null;
   })();
@@ -400,7 +401,8 @@ function recurringEdit(id) {
           onclick: () =>
             pickCategory({
               type: r.type,
-              onlyKind: r.type === "expense" ? "expense" : null,
+              kinds: r.type === "expense" ? ["fixed", "variable"] : null,
+              newKind: r.type === "expense" ? "fixed" : null,
               onPick: (c) => {
                 r.categoryId = c.id;
                 r.subcategoryId = null;

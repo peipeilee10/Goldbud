@@ -93,6 +93,22 @@ test("判斷花錢速度時扣掉固定收支", () => {
   assert.equal(cmp.rows.find((r) => r.category.id === home.id).status, "ok");
 });
 
+test("固定支出不判斷花太快；整月速度只看變動支出", () => {
+  const { d, food, home } = setup();
+  // 居住（固定）月初就付了 14,000（預算 15,000）→ 不算花太快
+  add(d, { date: "2026-10-02", amount: 14000, categoryId: home.id });
+  let cmp = compareMonth(d, "2026-10", "2026-10-03");
+  assert.equal(cmp.rows.find((r) => r.category.id === home.id).status, "ok");
+  assert.equal(cmp.overall.status, "ok");
+  assert.deepEqual(cmp.groups.fixed, { budget: 15000, actual: 14000 });
+  // 變動支出花太快 → 整月也是花太快
+  add(d, { date: "2026-10-02", amount: 9000, categoryId: food.id });
+  cmp = compareMonth(d, "2026-10", "2026-10-03");
+  assert.equal(cmp.rows.find((r) => r.category.id === food.id).status, "fast");
+  assert.equal(cmp.overall.status, "fast");
+  assert.deepEqual(cmp.groups.variable, { budget: 20000, actual: 9000 });
+});
+
 test("預算比對：使用率、狀態、小分類、預算外", () => {
   const { d, food, home, move } = setup();
   const [eat, drink] = food.subcategories;

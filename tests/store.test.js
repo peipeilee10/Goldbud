@@ -65,7 +65,7 @@ test("新方案沿用預設比例和現有分類", () => {
   assert.ok(p.expenses.every((e) => d.categories.some((c) => c.id === e.categoryId)));
 });
 
-test("v1 → v2：同名項目合併成同一個分類", () => {
+test("v1 → v3：同名項目合併成同一個分類，固定金額的算固定支出", () => {
   const v1 = {
     schemaVersion: 1,
     activePlanId: "p1",
@@ -91,13 +91,13 @@ test("v1 → v2：同名項目合併成同一個分類", () => {
     ],
   };
   const d = migrate(v1);
-  assert.equal(d.schemaVersion, 2);
-  assert.deepEqual(d.categories.map((c) => [c.name, c.emoji, c.kind]), [
-    ["吃飯", "🍙", "expense"],
-    ["房租", "🏠", "expense"],
-    ["儲蓄", "🐷", "saving"],
-    ["投資", "📈", "saving"],
-    ["未命名", "💸", "expense"],
+  assert.equal(d.schemaVersion, 3);
+  assert.deepEqual(d.categories.map((c) => [c.name, c.emoji, c.kind, c.color]), [
+    ["吃飯", "🍙", "variable", 1],
+    ["房租", "🏠", "fixed", 2],
+    ["儲蓄", "🐷", "saving", null],
+    ["投資", "📈", "saving", null],
+    ["未命名", "💸", "variable", 3],
   ]);
   assert.deepEqual(d.incomeCategories.map((c) => c.name), ["薪水", "兼職"]);
   // 兩個方案的「吃飯」指向同一個分類，數值保留
@@ -107,7 +107,7 @@ test("v1 → v2：同名項目合併成同一個分類", () => {
   assert.deepEqual([d.entries, d.recurring, d.months], [[], [], {}]);
 });
 
-test("v1 → v2：同一方案裡重複的名稱只留第一個", () => {
+test("v1 → v3：同一方案裡重複的名稱只留第一個", () => {
   const v1 = {
     schemaVersion: 1, activePlanId: "p",
     plans: [{ id: "p", name: "a", incomes: [], expenses: [
@@ -118,11 +118,30 @@ test("v1 → v2：同一方案裡重複的名稱只留第一個", () => {
   assert.deepEqual(migrate(v1).plans[0].expenses.map((e) => e.id), ["1"]);
 });
 
+test("v2 → v3：有固定收支或用固定金額的分類變成固定支出", () => {
+  const v2 = defaultData();
+  v2.schemaVersion = 2;
+  const [food, home, move, fun] = v2.categories;
+  for (const c of [food, home, move, fun]) c.kind = "expense";
+  v2.recurring.push({ id: "r", type: "expense", name: "遊戲", amount: 300, categoryId: fun.id, day: 1, mode: "auto", startMonth: "2026-10", active: true, skipped: [] });
+  v2.plans[0].expenses.find((e) => e.categoryId === move.id).mode = "amount";
+  const d = migrate(v2);
+  assert.equal(d.schemaVersion, 3);
+  assert.deepEqual(d.categories.map((c) => c.kind), ["variable", "variable", "fixed", "fixed", "saving"]);
+  // 顏色不變
+  assert.deepEqual(d.categories.map((c) => c.color), [1, 2, 3, 4, null]);
+});
+
+test("預設分類的類型：居住是固定支出", () => {
+  const d = defaultData();
+  assert.deepEqual(d.categories.map((c) => [c.name, c.kind]), [["飲食", "variable"], ["居住", "fixed"], ["交通", "variable"], ["娛樂", "variable"], ["儲蓄", "saving"]]);
+});
+
 test("讀取 v1 資料時先備份原始資料再轉換", () => {
   const v1 = { schemaVersion: 1, activePlanId: "p", plans: [{ id: "p", name: "a", incomes: [], expenses: [{ id: "1", emoji: "🍙", name: "吃飯", mode: "percent", value: 10 }] }] };
   const s = memoryStorage({ [STORAGE_KEY]: JSON.stringify(v1) });
   const d = load(s);
-  assert.equal(d.schemaVersion, 2);
+  assert.equal(d.schemaVersion, 3);
   assert.equal(d.categories[0].name, "吃飯");
   assert.equal(s.getItem(`${STORAGE_KEY}-backup-v1`), JSON.stringify(v1));
 });

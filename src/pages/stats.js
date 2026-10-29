@@ -122,11 +122,30 @@ function verdict(cmp, isCurrent, hasEntries) {
 
 const BADGE = { fast: ["fast", "⚡ 花太快"], over: ["over", "⚠ 超支"], outside: ["out", "預算外"] };
 
+/** 預算比對分段：固定支出、變動支出、預算外（SPEC B7.1） */
 function compareView(cmp) {
-  const rows = [...cmp.rows, ...cmp.outside];
   const tips = suggestions(cmp);
+  const section = (icon, label, rows, sum) =>
+    rows.length
+      ? [
+          h("div", { class: "prog-group" }, h("span", { class: "kind-ic", "aria-hidden": "true" }, icon), label, sum ? h("span", { class: "num" }, `${money(sum.actual)} / ${money(sum.budget)}`) : null),
+          // 固定支出不看速度，不畫今天線
+          rows.map((r) => progRow(r, r.kind === "fixed" ? null : cmp.ratio)),
+        ]
+      : null;
+  const fixed = cmp.rows.filter((r) => r.kind === "fixed");
+  const variable = cmp.rows.filter((r) => r.kind === "variable");
+  const hasRows = cmp.rows.length + cmp.outside.length > 0;
   return [
-    rows.length ? h("div", { class: "prog-card" }, rows.map((r) => progRow(r, cmp.ratio))) : h("p", { class: "empty-hint" }, "這個月的預算方案沒有支出項目"),
+    hasRows
+      ? h(
+          "div",
+          { class: "prog-card" },
+          section("🏠", "固定支出", fixed, cmp.groups.fixed),
+          section("🛒", "變動支出", variable, cmp.groups.variable),
+          section("📎", "預算外", cmp.outside, null),
+        )
+      : h("p", { class: "empty-hint" }, "這個月的預算方案沒有支出項目"),
     h(
       "div",
       { class: "info-card" },
@@ -213,7 +232,7 @@ function progRow(r, ratio) {
       h(
         "span",
         { class: remain < -0.5 ? "bad" : null },
-        r.status === "outside" ? "" : remain < -0.5 ? `超出 ${money(-remain)}` : Math.abs(remain) <= 0.5 ? "剛好用完" : `剩 ${money(remain)}`,
+        r.status === "outside" ? "" : r.budget <= 0 && r.actual <= 0 ? "還沒設定預算" : remain < -0.5 ? `超出 ${money(-remain)}` : Math.abs(remain) <= 0.5 ? "剛好用完" : `剩 ${money(remain)}`,
         canExpand ? (expanded ? " ▴" : " ▾") : "",
       ),
     ),

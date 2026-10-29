@@ -1,7 +1,7 @@
 // 記帳首頁（SPEC B5，wireframe A）
 
 import { entriesInMonth, groupByDay, compareMonth, runRecurring, skipMonth } from "../ledger.js";
-import { newEntry } from "../store.js";
+import { newEntry, isSpending } from "../store.js";
 import { todayStr, monthKey, shiftMonth, monthTitle, dayLabel, addDays } from "../dates.js";
 import { daysSinceBackup } from "../backup.js";
 import * as calculator from "../calculator.js";
@@ -105,7 +105,7 @@ function searchBar() {
       "div",
       { class: "chips" },
       h("button", { class: filter.categoryId ? "chip" : "chip on", onclick: () => ((filter.categoryId = null), render()) }, "全部"),
-      [...data.categories.filter((c) => c.kind === "expense"), ...data.incomeCategories].map((c) =>
+      [...data.categories.filter(isSpending), ...data.incomeCategories].map((c) =>
         h("button", { class: filter.categoryId === c.id ? "chip on" : "chip", onclick: () => ((filter.categoryId = c.id), render()) }, `${c.emoji} ${c.name}`),
       ),
     ),
@@ -156,6 +156,12 @@ export function overview(cmp, isCurrent) {
             ratio != null ? h("span", { class: "today-line", style: `left:${(ratio * 100) / (scale / 100)}%`, "aria-hidden": "true" }) : null,
           ),
           h("div", { class: "meter-note" }, h("span", {}, words, badge ? h("span", { class: `badge ${badge[0]}` }, badge[1]) : null), h("span", {}, `預算 ${formatAmount(Math.round(overall.budget))} · 已用 ${Math.round(pct)}%`)),
+          h(
+            "div",
+            { class: "ov-split" },
+            h("span", {}, "🏠 固定 ", h("b", {}, formatAmount(Math.round(cmp.groups.fixed.actual))), ` / ${formatAmount(Math.round(cmp.groups.fixed.budget))}`),
+            h("span", {}, "🛒 變動 ", h("b", {}, formatAmount(Math.round(cmp.groups.variable.actual))), ` / ${formatAmount(Math.round(cmp.groups.variable.budget))}`),
+          ),
         ]
       : h("div", { class: "meter-note" }, h("span", {}, "這個月的預算方案沒有支出項目")),
   );

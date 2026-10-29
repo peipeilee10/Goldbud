@@ -370,6 +370,8 @@ body.sheet-open .toast { bottom: 24px; }
 .meter i.fast { background-color: var(--fast); background-image: repeating-linear-gradient(-45deg, #ffffff40 0 5px, transparent 5px 10px); }
 .meter-note { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
 .meter-note .badge { margin-left: 4px; }
+.ov-split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 2px dashed var(--hairline); font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.ov-split b { font: 900 14px var(--font-num); color: var(--ink); }
 
 /* 提示橫幅 */
 .banner {
@@ -538,8 +540,25 @@ a.add { text-decoration: none; }
 .menu-row .handle { margin: 0 -4px 0 -6px; }
 .menu-row.dragging { box-shadow: 0 10px 24px #6b4a2f33, 0 0 0 2px var(--outline); }
 .kind { font-size: 11px; font-weight: 800; padding: 0 7px; border-radius: 999px; white-space: nowrap; flex: none; }
-.kind.exp { background: var(--expense-soft); color: var(--expense-ink); }
-.kind.sav { background: var(--income-soft); color: var(--income-ink); }
+.kind.fixed { background: var(--expense-soft); color: var(--expense-ink); }
+.kind.variable { background: var(--yuzu-soft); color: var(--fast-ink); }
+.kind.saving { background: var(--income-soft); color: var(--income-ink); }
+
+/* 支出分三段：固定支出、變動支出、儲蓄／投資 */
+.kind-group + .kind-group { margin-top: 14px; padding-top: 12px; border-top: 2.5px solid var(--hairline); }
+.kind-head { display: flex; align-items: center; gap: 6px; margin: 0 2px 8px; font-size: 14px; }
+.kind-head .kind-ic { width: 26px; height: 26px; border-radius: 9px; display: grid; place-items: center; font-size: 14px; border: 2px solid var(--outline); background: #fff; }
+.kind-group.fixed .kind-ic { background: var(--expense-soft); }
+.kind-group.variable .kind-ic { background: var(--yuzu-soft); }
+.kind-group.saving .kind-ic { background: var(--income-soft); }
+.kind-sum { margin-left: auto; font: 800 13px var(--font-num); color: var(--ink-soft); white-space: nowrap; }
+.kind-list .empty-hint { padding: 2px 0 4px; }
+.add.small { height: 40px; margin-top: 8px; font-size: 14px; }
+.prog-group { display: flex; align-items: center; gap: 6px; padding: 12px 0 2px; font-size: 13px; font-weight: 800; color: var(--ink-soft); }
+.prog-group + .prog { border-top: 0; }
+.prog-group .kind-ic { font-size: 14px; }
+.prog-group .num { margin-left: auto; font: 800 13px var(--font-num); }
+.prog-card .prog-group:not(:first-child) { border-top: 2.5px solid var(--hairline); margin-top: 4px; }
 .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
 /* 列表的名稱撐滿，右邊的顏色點、標籤、箭頭靠右對齊 */
 .row-link > span:nth-of-type(2), .menu-row > span:nth-of-type(2) { flex: 1; min-width: 0; }

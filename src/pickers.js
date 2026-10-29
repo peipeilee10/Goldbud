@@ -2,16 +2,17 @@
 
 import { h, openSheet, promptSheet } from "./ui.js";
 import { getData, commit } from "./state.js";
-import { newCategory, newIncomeCategory, guessKind } from "./store.js";
+import { newCategory, newIncomeCategory, guessKind, kindInfo } from "./store.js";
 
 /**
- * type："expense"（大分類，包含儲蓄類）或 "income"（收入分類）
+ * type："expense"（大分類）或 "income"（收入分類）
  * exclude：不能選的分類 id（例如方案裡已經有的）
- * onlyKind："expense" 時只列支出類（記帳用，儲蓄類不能記成支出）
+ * kinds：只列這些類型的大分類（例如記帳時只能選固定／變動支出，儲蓄類不能記成支出）
+ * newKind：在這裡新增的大分類用什麼類型（沒給就依名稱猜）
  */
-export function pickCategory({ type, title, exclude = new Set(), onlyKind = null, onPick }) {
+export function pickCategory({ type, title, exclude = new Set(), kinds = null, newKind = null, onPick }) {
   const data = getData();
-  const list = (type === "income" ? data.incomeCategories : data.categories).filter((c) => !onlyKind || c.kind === onlyKind);
+  const list = (type === "income" ? data.incomeCategories : data.categories).filter((c) => !kinds || kinds.includes(c.kind));
   const close = openSheet(
     title ?? (type === "income" ? "選擇收入分類" : "選擇分類"),
     [
@@ -47,7 +48,7 @@ export function pickCategory({ type, title, exclude = new Set(), onlyKind = null
                   cat = newIncomeCategory(name);
                   d.incomeCategories.push(cat);
                 } else {
-                  cat = newCategory(d.categories, { name, kind: onlyKind ?? guessKind(name) });
+                  cat = newCategory(d.categories, { name, kind: newKind ?? guessKind(name) });
                   d.categories.push(cat);
                 }
                 commit();
@@ -56,7 +57,7 @@ export function pickCategory({ type, title, exclude = new Set(), onlyKind = null
             });
           },
         },
-        type === "income" ? "＋ 新增收入分類" : "＋ 新增分類",
+        type === "income" ? "＋ 新增收入分類" : newKind ? `＋ 新增${kindInfo(newKind).label}分類` : "＋ 新增分類",
       ),
     ],
   );
