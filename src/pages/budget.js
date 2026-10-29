@@ -44,7 +44,11 @@ function renderPlans() {
     }),
     h("button", { class: "plan plan-add", "aria-label": "新增方案", onclick: addPlan }, "＋"),
   );
-  nav.querySelector(".on")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  // 只橫向捲動標籤列；用 scrollIntoView 會連整頁都捲回最上面
+  const on = nav.querySelector(".on");
+  if (on && (on.offsetLeft < nav.scrollLeft || on.offsetLeft + on.offsetWidth > nav.scrollLeft + nav.clientWidth)) {
+    nav.scrollLeft = on.offsetLeft - 16;
+  }
   renderMonthPlan();
 }
 
@@ -383,6 +387,11 @@ function update() {
   lastStatus = s.status;
 }
 
+/** 新增的那一列捲到看得到的地方（不被底部的摘要列擋住），畫面停在原處附近 */
+function showNew(listId, id) {
+  requestAnimationFrame(() => document.querySelector(`#${listId} [data-id="${id}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
+}
+
 // ---------- 對外 ----------
 
 export function render() {
@@ -408,6 +417,7 @@ export function mount() {
         persist();
         renderIncomes(item.id);
         update();
+        showNew("income-list", item.id);
       },
     }),
   );
@@ -421,6 +431,7 @@ export function mount() {
         persist();
         renderExpenses(item.id);
         update();
+        showNew("expense-list", item.id);
       },
     }),
   );

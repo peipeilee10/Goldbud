@@ -57,3 +57,5 @@
 | D-051 | 2026-10-24 | 本機開發用不暫存的伺服器（`scripts/dev_server.py`），localhost 預設不啟用 service worker（加 `?sw` 才啟用） | 開發時一直拿到舊檔案，浪費時間又容易誤判 |
 | D-052 | 2026-10-24 | 程式拆成頁面模組（`src/pages/`）＋共用元件（`ui.js`、`pickers.js`）＋資料（`state.js`），用網址 hash 切換分頁 | 功能變多後單一 app.js 太大；hash 路由不需要伺服器設定，GitHub Pages 直接可用 |
 | D-053 | 2026-10-24 | v2.0.0 在 `feature/ledger` 分支開發，完成後才合併到 main | main 一推就會上線，大改版不能半成品上線 |
+| D-054 | 2026-10-29 | 分頁列高度改由程式實際量測（`--tabbar-h`） | 用 CSS 估的高度在 iPhone 有安全區時差了 20 多 px，摘要列浮在半空中 |
+| D-055 | 2026-10-29 | 全站使用 `touch-action: manipulation` | 取消快速點兩下放大（連按計算機會被放大、按不到鍵），但保留雙指縮放，不影響需要放大的使用者 |

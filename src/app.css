@@ -2,7 +2,9 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { -webkit-text-size-adjust: 100%; }
+/* manipulation：保留雙指縮放，但取消「快速點兩下就放大」，連按計算機鍵才不會被放大 */
+html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+button, .tab, .chip, .cat { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 body {
   margin: 0;
   background: var(--bg);
@@ -564,5 +566,7 @@ a.add { text-decoration: none; }
 /* 預算頁的摘要列貼在分頁列上方，縮成兩行（數字已經在卡片裡） */
 #page-budget .summary .stats { display: none; }
 #page-budget .summary { padding-top: 8px; padding-bottom: 10px; }
+/* 新增的列捲進畫面時，留出摘要列和分頁列的高度 */
+#page-budget .item { scroll-margin-bottom: calc(var(--tabbar-h) + 90px); }
 #page-budget .summary .mascot { width: 66px; height: 66px; top: -22px; }
 #page-budget .summary .meter { margin-bottom: 0; }

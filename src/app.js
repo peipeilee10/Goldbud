@@ -59,6 +59,12 @@ function startup() {
   }
 }
 
+// 分頁列的實際高度（含 iPhone 下方安全區）存到 --tabbar-h，摘要列和提示條才會剛好貼在它上方
+const tabbar = document.querySelector(".tabbar");
+const syncTabbar = () => document.documentElement.style.setProperty("--tabbar-h", `${tabbar.offsetHeight}px`);
+new ResizeObserver(syncTabbar).observe(tabbar);
+syncTabbar();
+
 budget.mount();
 ledger.mount($("page-ledger"));
 stats.mount($("page-stats"));
