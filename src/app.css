@@ -568,5 +568,6 @@ a.add { text-decoration: none; }
 #page-budget .summary { padding-top: 8px; padding-bottom: 10px; }
 /* 新增的列捲進畫面時，留出摘要列和分頁列的高度 */
 #page-budget .item { scroll-margin-bottom: calc(var(--tabbar-h) + 90px); }
-#page-budget .summary .mascot { width: 66px; height: 66px; top: -22px; }
+/* 水豚整隻放在摘要列裡，頭不要頂到上方的框線 */
+#page-budget .summary .mascot { width: 60px; height: 60px; top: 50%; transform: translateY(-50%); left: 16px; }
 #page-budget .summary .meter { margin-bottom: 0; }
