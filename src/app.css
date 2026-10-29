@@ -427,7 +427,8 @@ body.sheet-open .toast { bottom: 24px; }
 .seg.small { width: 170px; margin: 12px auto 0; }
 
 /* 記一筆面板 */
-.sheet { max-height: 94dvh; overflow-y: auto; overscroll-behavior: contain; }
+/* 高度以底色層（= 看得到的範圍，鍵盤彈出時會變矮）為準，面板才不會超出鍵盤上方 */
+.sheet { max-height: calc(100% - 12px); overflow-y: auto; overscroll-behavior: contain; }
 .add-sheet { padding-top: 8px; }
 .add-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .add-top .seg { width: 150px; }

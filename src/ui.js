@@ -37,6 +37,7 @@ export function openSheet(title, body, { className = "", onBeforeClose } = {}) {
     if (!force && onBeforeClose && onBeforeClose() === false) return;
     closed = true;
     sheet.dispatchEvent(new Event("sheetclose"));
+    stopFit();
     backdrop.remove();
     document.removeEventListener("keydown", onKey);
     document.body.classList.toggle("sheet-open", !!document.querySelector(".backdrop"));
@@ -51,11 +52,33 @@ export function openSheet(title, body, { className = "", onBeforeClose } = {}) {
     body,
   );
   const backdrop = h("div", { class: "backdrop", onclick: (e) => e.target === backdrop && close() }, sheet);
+  const stopFit = fitToVisibleArea(backdrop);
   document.addEventListener("keydown", onKey);
   document.body.append(backdrop);
   document.body.classList.add("sheet-open");
   (sheet.querySelector("[autofocus]") ?? sheet.querySelector("input, button:not(:disabled)") ?? sheet).focus?.({ preventScroll: true });
   return close;
+}
+
+/**
+ * iPhone 彈出鍵盤時不會把網頁縮短，只會縮小「看得到的範圍」（visualViewport），
+ * 貼在畫面底部的面板就被鍵盤蓋住。讓面板的底色層跟著看得到的範圍走，面板就會在鍵盤上方。
+ */
+function fitToVisibleArea(el) {
+  const vv = window.visualViewport;
+  if (!vv) return () => {};
+  const fit = () => {
+    el.style.top = `${vv.offsetTop}px`;
+    el.style.height = `${vv.height}px`;
+    el.style.bottom = "auto";
+  };
+  fit();
+  vv.addEventListener("resize", fit);
+  vv.addEventListener("scroll", fit);
+  return () => {
+    vv.removeEventListener("resize", fit);
+    vv.removeEventListener("scroll", fit);
+  };
 }
 
 export function confirmSheet({ title, message, confirmLabel, cancelLabel = "取消", danger = true, onConfirm, onCancel }) {
