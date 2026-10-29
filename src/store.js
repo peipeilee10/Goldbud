@@ -23,6 +23,9 @@ export const KINDS = [
 ];
 export const kindInfo = (kind) => KINDS.find((k) => k.kind === kind) ?? KINDS[1];
 
+/** 段落圖示：使用者換過就用 data.kindIcons，沒換過用預設（選填欄位，舊資料不用轉換） */
+export const kindIcon = (data, kind) => data.kindIcons?.[kind] ?? kindInfo(kind).icon;
+
 /** 固定或變動支出（儲蓄類不算支出） */
 export const isSpending = (cat) => cat?.kind === "fixed" || cat?.kind === "variable";
 

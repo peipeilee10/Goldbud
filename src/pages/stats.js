@@ -2,6 +2,7 @@
 
 import { compareMonth, suggestions, donutSlices, subcategorySlices, setMonthPlan, ensureMonth } from "../ledger.js";
 import { todayStr, monthKey } from "../dates.js";
+import { kindIcon } from "../store.js";
 import { h, openSheet, confirmSheet, formatAmount } from "../ui.js";
 import { getData, commit } from "../state.js";
 import { monthNavFor } from "./ledger.js";
@@ -141,8 +142,8 @@ function compareView(cmp) {
       ? h(
           "div",
           { class: "prog-card" },
-          section("🏠", "固定支出", fixed, cmp.groups.fixed),
-          section("🛒", "變動支出", variable, cmp.groups.variable),
+          section(kindIcon(getData(), "fixed"), "固定支出", fixed, cmp.groups.fixed),
+          section(kindIcon(getData(), "variable"), "變動支出", variable, cmp.groups.variable),
           section("📎", "預算外", cmp.outside, null),
         )
       : h("p", { class: "empty-hint" }, "這個月的預算方案沒有支出項目"),

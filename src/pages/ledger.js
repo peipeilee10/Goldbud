@@ -1,7 +1,7 @@
 // 記帳首頁（SPEC B5，wireframe A）
 
 import { entriesInMonth, groupByDay, compareMonth, runRecurring, skipMonth } from "../ledger.js";
-import { newEntry, isSpending } from "../store.js";
+import { newEntry, isSpending, kindIcon } from "../store.js";
 import { todayStr, monthKey, shiftMonth, monthTitle, dayLabel, addDays } from "../dates.js";
 import { daysSinceBackup } from "../backup.js";
 import * as calculator from "../calculator.js";
@@ -159,8 +159,8 @@ export function overview(cmp, isCurrent) {
           h(
             "div",
             { class: "ov-split" },
-            h("span", {}, "🏠 固定 ", h("b", {}, formatAmount(Math.round(cmp.groups.fixed.actual))), ` / ${formatAmount(Math.round(cmp.groups.fixed.budget))}`),
-            h("span", {}, "🛒 變動 ", h("b", {}, formatAmount(Math.round(cmp.groups.variable.actual))), ` / ${formatAmount(Math.round(cmp.groups.variable.budget))}`),
+            h("span", {}, `${kindIcon(getData(), "fixed")} 固定 `, h("b", {}, formatAmount(Math.round(cmp.groups.fixed.actual))), ` / ${formatAmount(Math.round(cmp.groups.fixed.budget))}`),
+            h("span", {}, `${kindIcon(getData(), "variable")} 變動 `, h("b", {}, formatAmount(Math.round(cmp.groups.variable.actual))), ` / ${formatAmount(Math.round(cmp.groups.variable.budget))}`),
           ),
         ]
       : h("div", { class: "meter-note" }, h("span", {}, "這個月的預算方案沒有支出項目")),

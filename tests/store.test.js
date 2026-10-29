@@ -12,6 +12,7 @@ import {
   newCategory,
   nextColor,
   migrate,
+  kindIcon,
 } from "../src/store.js";
 
 function memoryStorage(initial = {}) {
@@ -205,4 +206,11 @@ test("方案名稱不重複", () => {
   const plans = [{ name: "新方案" }, { name: "新方案 2" }];
   assert.equal(uniqueName("新方案", plans), "新方案 3");
   assert.equal(uniqueName("加薪後", plans), "加薪後");
+});
+
+test("段落圖示：沒換過用預設，換過用自訂", () => {
+  const d = defaultData();
+  assert.deepEqual(["fixed", "variable", "saving"].map((k) => kindIcon(d, k)), ["🏠", "🛒", "🐷"]);
+  d.kindIcons = { variable: "🧾" };
+  assert.deepEqual(["fixed", "variable"].map((k) => kindIcon(d, k)), ["🏠", "🧾"]);
 });

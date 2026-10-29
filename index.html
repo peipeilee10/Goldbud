@@ -59,21 +59,23 @@
       </section>
     </main>
 
-    <footer class="summary" id="summary" aria-live="polite">
-      <img class="mascot" id="mascot" src="design/mascot/capybara-calm.svg" alt="">
-      <span class="bubble" id="bubble"></span>
-      <div class="meter" aria-hidden="true"><i id="meter-fill"></i><i class="over" id="meter-over"></i></div>
-      <div class="stats">
-        <div>收入<b id="stat-total"></b></div>
-        <div>已分配<b id="stat-allocated"></b></div>
-        <div>剩餘<b id="stat-remaining"></b></div>
-      </div>
-    </footer>
   </section>
 
   <!-- 更多 -->
   <section class="page" id="page-more" data-page="more" hidden></section>
 
+  <!-- 底部固定區：預算頁的摘要列和分頁列放在同一個容器裡疊起來，永遠不會錯開 -->
+  <div class="dock" id="dock">
+  <footer class="summary" id="summary" aria-live="polite" hidden>
+    <img class="mascot" id="mascot" src="design/mascot/capybara-calm.svg" alt="">
+    <span class="bubble" id="bubble"></span>
+    <div class="meter" aria-hidden="true"><i id="meter-fill"></i><i class="over" id="meter-over"></i></div>
+    <div class="stats">
+      <div>收入<b id="stat-total"></b></div>
+      <div>已分配<b id="stat-allocated"></b></div>
+      <div>剩餘<b id="stat-remaining"></b></div>
+    </div>
+  </footer>
   <nav class="tabbar" aria-label="主選單">
     <a class="tab" href="#/ledger" data-tab="ledger"><span class="ic" aria-hidden="true">📒</span>記帳</a>
     <a class="tab" href="#/stats" data-tab="stats"><span class="ic" aria-hidden="true">📊</span>統計</a>
@@ -81,6 +83,7 @@
     <a class="tab" href="#/budget" data-tab="budget"><span class="ic" aria-hidden="true">🎯</span>預算</a>
     <a class="tab" href="#/more" data-tab="more"><span class="ic" aria-hidden="true">⋯</span>更多</a>
   </nav>
+  </div>
 </div>
 
 <noscript>這個工具需要開啟 JavaScript 才能使用。</noscript>

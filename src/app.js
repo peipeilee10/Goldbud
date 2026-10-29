@@ -26,6 +26,8 @@ function show() {
   current = name;
   currentParts = rest;
   for (const sec of document.querySelectorAll(".page")) sec.hidden = sec.dataset.page !== name;
+  $("summary").hidden = name !== "budget";
+  syncTabbar(); // 摘要列出現／消失會改變底部高度，立刻更新，不等 ResizeObserver
   for (const tab of document.querySelectorAll(".tab")) {
     const on = tab.dataset.tab === name;
     tab.classList.toggle("on", on);
@@ -87,10 +89,11 @@ function preventDoubleTapZoom() {
 }
 preventDoubleTapZoom();
 
-// 分頁列的實際高度（含 iPhone 下方安全區）存到 --tabbar-h，摘要列和提示條才會剛好貼在它上方
-const tabbar = document.querySelector(".tabbar");
-const syncTabbar = () => document.documentElement.style.setProperty("--tabbar-h", `${tabbar.offsetHeight}px`);
-new ResizeObserver(syncTabbar).observe(tabbar);
+// 底部固定區（摘要列＋分頁列，含 iPhone 下方安全區）的實際高度存到 --tabbar-h，
+// 頁面內容和提示條才會留出剛好的空間
+const dock = $("dock");
+const syncTabbar = () => document.documentElement.style.setProperty("--tabbar-h", `${dock.offsetHeight}px`);
+new ResizeObserver(syncTabbar).observe(dock);
 syncTabbar();
 
 budget.mount();

@@ -1,7 +1,7 @@
 // 預算頁（SPEC 第 3～6 節；v2 起項目改成選共用分類，見 B3.2）
 
 import { incomeTotal, expenseView, summarize, formatNumber, formatMoney, formatPercent, parseInput, sanitizeTyping } from "../calc.js";
-import { defaultPlan, clonePlan, uniqueName, newIncome, newExpense, KINDS, kindInfo } from "../store.js";
+import { defaultPlan, clonePlan, uniqueName, newIncome, newExpense, KINDS, kindInfo, kindIcon } from "../store.js";
 import { ensureMonth } from "../ledger.js";
 import { todayStr, monthKey } from "../dates.js";
 import * as calculator from "../calculator.js";
@@ -226,7 +226,7 @@ const kindOf = (item) => findCategory(item.categoryId)?.kind ?? "variable";
 function renderExpenses(popId) {
   const root = $("expense-list");
   root.replaceChildren(
-    ...KINDS.map(({ kind, label, icon }) => {
+    ...KINDS.map(({ kind, label }) => {
       const items = plan().expenses.filter((e) => kindOf(e) === kind);
       const list = h("div", { class: "kind-list", "data-kind": kind }, items.map((item) => expenseRow(item, item.id === popId)));
       if (!items.length) list.append(h("p", { class: "empty-hint" }, `還沒有${label}`));
@@ -239,7 +239,29 @@ function renderExpenses(popId) {
       return h(
         "section",
         { class: `kind-group ${kind}` },
-        h("div", { class: "kind-head" }, h("span", { class: "kind-ic", "aria-hidden": "true" }, icon), h("b", {}, label), h("span", { class: "kind-sum", "data-sum": kind })),
+        h(
+          "div",
+          { class: "kind-head" },
+          // 點圖示可以換（統計、記帳頁也會跟著換）
+          h(
+            "button",
+            {
+              class: "kind-ic",
+              "aria-label": `更換「${label}」的圖示`,
+              onclick: () =>
+                pickEmoji(kindIcon(getData(), kind), (e) => {
+                  const d = getData();
+                  d.kindIcons = { ...d.kindIcons, [kind]: e };
+                  commit(SELF);
+                  renderExpenses();
+                  update();
+                }),
+            },
+            kindIcon(getData(), kind),
+          ),
+          h("b", {}, label),
+          h("span", { class: "kind-sum", "data-sum": kind }),
+        ),
         list,
         h("button", { class: "add small", onclick: () => addExpense(kind) }, `＋ 新增${label}`),
       );

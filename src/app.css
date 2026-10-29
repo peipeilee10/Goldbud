@@ -195,7 +195,7 @@ body.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbin
 
 /* ---------- 摘要列 ---------- */
 .summary {
-  position: sticky; bottom: var(--tabbar-h); z-index: 5;
+  position: relative;
   background: var(--surface);
   border: var(--border); border-bottom: 0;
   border-radius: 26px 26px 0 0;
@@ -323,10 +323,10 @@ body.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbin
 .kv b.good { color: var(--income-ink); }
 .kv b.bad { color: var(--over-ink); }
 
-/* 底部分頁列 */
+/* 底部固定區：摘要列（只在預算頁）＋分頁列。--tabbar-h 是整個區塊的實際高度 */
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; max-width: 480px; margin: 0 auto; }
 .tabbar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-  max-width: 480px; margin: 0 auto;
+  position: relative;
   display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
   background: var(--surface); border-top: var(--border);
   padding: 6px 6px max(12px, env(safe-area-inset-bottom));
@@ -549,7 +549,8 @@ a.add { text-decoration: none; }
 /* 支出分三段：固定支出、變動支出、儲蓄／投資 */
 .kind-group + .kind-group { margin-top: 14px; padding-top: 12px; border-top: 2.5px solid var(--hairline); }
 .kind-head { display: flex; align-items: center; gap: 6px; margin: 0 2px 8px; font-size: 14px; }
-.kind-head .kind-ic { width: 26px; height: 26px; border-radius: 9px; display: grid; place-items: center; font-size: 14px; border: 2px solid var(--outline); background: #fff; }
+.kind-head .kind-ic { width: 34px; height: 34px; padding: 0; border-radius: 11px; display: grid; place-items: center; font-size: 17px; border: 2px solid var(--outline); background: #fff; box-shadow: 0 2px 0 var(--outline); }
+.kind-head .kind-ic:active { transform: translateY(2px); box-shadow: none; }
 .kind-group.fixed .kind-ic { background: var(--expense-soft); }
 .kind-group.variable .kind-ic { background: var(--yuzu-soft); }
 .kind-group.saving .kind-ic { background: var(--income-soft); }
@@ -585,10 +586,10 @@ a.add { text-decoration: none; }
 .item.saving .emoji { background: var(--income-soft); }
 
 /* 預算頁的摘要列貼在分頁列上方，縮成兩行（數字已經在卡片裡） */
-#page-budget .summary .stats { display: none; }
-#page-budget .summary { padding-top: 8px; padding-bottom: 10px; }
+.dock .summary .stats { display: none; }
+.dock .summary { padding-top: 8px; padding-bottom: 10px; }
 /* 新增的列捲進畫面時，留出摘要列和分頁列的高度 */
-#page-budget .item { scroll-margin-bottom: calc(var(--tabbar-h) + 90px); }
+#page-budget .item { scroll-margin-bottom: calc(var(--tabbar-h) + 16px); }
 /* 水豚整隻放在摘要列裡，頭不要頂到上方的框線 */
-#page-budget .summary .mascot { width: 60px; height: 60px; top: 50%; transform: translateY(-50%); left: 16px; }
-#page-budget .summary .meter { margin-bottom: 0; }
+.dock .summary .mascot { width: 60px; height: 60px; top: 50%; transform: translateY(-50%); left: 16px; }
+.dock .summary .meter { margin-bottom: 0; }
