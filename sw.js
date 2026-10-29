@@ -2,7 +2,7 @@
 // 每次發布新版都要更新 VERSION（tests/version.test.js 會檢查和 src/version.js 一致），
 // 手機才會下載新檔案。
 
-const VERSION = "2.1.1";
+const VERSION = "2.2.0";
 const CACHE = `goldbud-${VERSION}`;
 // 舊名稱時期的快取也一起清掉
 const OLD_PREFIXES = ["goldbud-", "budget-capybara-"];
