@@ -83,8 +83,8 @@ wireframes/           各版本 wireframe（用瀏覽器打開 .html）
 2. **記決策**：在 `docs/DECISIONS.md` 新增一筆，寫下原因。
 3. **寫程式＋測試**：修改 `src/`，在 `tests/` 補上測試，跑 `npm test`。
 4. **記變更**：在 `CHANGELOG.md` 的「未發布」區塊寫下改了什麼。
-5. **大改版用分支**：在 `feature/...` 分支開發，完成並測試後才合併到 main（main 一推就上線）。
-6. **發布**：更新版本號（`package.json`、`src/version.js`、`sw.js` 的 `VERSION`、CHANGELOG），跑 `npm test` 確認一致，git commit 後打 tag（例如 `v1.2.0`）。
+5. **先累積在 `next` 分支**：修改和新功能都先 commit 在 `next`（大改版可以再開 `feature/...`），測試過但**不上線**。main 一推就會上線，所以等決定「上版」時才合併。
+6. **上版（統一發布）**：決定上版時，把 `next` 累積的修改一起發布：更新版本號（`package.json`、`src/version.js`、`sw.js` 的 `VERSION`、CHANGELOG），跑 `npm test` 確認一致，git commit 後打 tag（例如 `v1.2.0`）。
    - 有新增檔案的話，也要加進 `sw.js` 的 `FILES` 清單，離線時才打得開。
 7. **上線**：`git push && git push --tags`。GitHub Pages 會自動用 `main` 分支更新網站，約 1 分鐘後生效；手機上的 App 會在下次打開時於背景下載新版，再下一次打開就是新版。
 
